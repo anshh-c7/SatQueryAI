@@ -8,7 +8,9 @@ import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { ProfileMenu } from "@/components/auth/ProfileMenu";
 import { toast } from "@/store/useToastStore";
+import { ReportVisuals } from "@/components/results/ReportVisuals";
 import type { AnalyzeResponse } from "@/lib/types/analyze";
+import { BackgroundVideo } from "@/components/common/BackgroundVideo";
 
 interface AnalysisPageProps {
   params: Promise<{
@@ -56,6 +58,7 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
 
   return (
     <div className="relative min-h-screen w-screen bg-[#FAF6F0] dark:bg-[#0F0E0C] text-primary overflow-x-hidden selection:bg-accent/20 selection:text-primary transition-colors duration-300">
+      <BackgroundVideo />
       <header className="relative z-20 px-6 py-4 flex items-center justify-between border-b border-stone-300/40 dark:border-white/10">
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="w-8 h-8 rounded-full bg-[#1C1917] dark:bg-[#1F1B17] text-white flex items-center justify-center shadow-xs">
@@ -105,7 +108,15 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
           </div>
         )}
 
-        {data && <ResultsPanel data={data} />}
+        {data && <>
+          <div className="rounded-2xl border border-stone-300/70 bg-white/65 p-5 shadow-subtle dark:border-white/10 dark:bg-[#171512]/80">
+            <p className="text-[10px] font-mono uppercase tracking-[0.16em] text-secondary">SatQuery AI report</p>
+            <h1 className="mt-1 break-words font-serif text-3xl text-primary">{data.query}</h1>
+            <p className="mt-2 text-xs text-secondary">Generated from the received analysis output. Visuals are derived from the response metrics and input modalities.</p>
+          </div>
+          <ReportVisuals data={data} />
+          <ResultsPanel data={data} />
+        </>}
       </main>
     </div>
   );

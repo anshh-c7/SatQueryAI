@@ -9,7 +9,6 @@ import { InputsTable } from "./InputsTable";
 import { EvidencePanel } from "./EvidencePanel";
 import { ExecutionTrace } from "./ExecutionTrace";
 import { ReportLinks } from "./ReportLinks";
-import { ResultsOverview } from "./ResultsOverview";
 import type { PdfConversationTurn } from "@/lib/conversationPdf";
 
 interface ResultsPanelProps {
@@ -24,7 +23,6 @@ export const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, imagePreviews 
   return (
     <div className={`${dense ? "space-y-2" : "space-y-4"} w-full max-w-5xl mx-auto animate-fade-in-up`}>
       {showImages && imagePreviews.length > 0 && <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{imagePreviews.map((image) => <figure key={image.filename} className="overflow-hidden rounded-xl border border-stone-200 bg-white/60 dark:border-white/10 dark:bg-[#171512]"><img src={image.data_url} alt={image.filename} className="max-h-64 w-full object-contain" /><figcaption className="truncate px-3 py-2 text-xs text-secondary">{image.filename}</figcaption></figure>)}</div>}
-      {!dense && <ResultsOverview data={data} />}
       {/* 1. Plain-English answer */}
       <AnswerBlock
         answer={data.answer}
@@ -35,26 +33,23 @@ export const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, imagePreviews 
         compact={dense}
       />
 
-      {/* 2. Confidence Bar + Caveat */}
-      <ConfidenceBar
-        confidence={data.confidence}
-        confidenceSource={data.confidence_source}
-      />
-
-      {/* 3. Inputs Table */}
+      {/* 2. Received data tables */}
       {data.inputs && data.inputs.length > 0 && (
         <InputsTable inputs={data.inputs} />
       )}
 
-      {/* 4. Visual Evidence Panel */}
+      {/* 3. Minimal confidence */}
+      <ConfidenceBar confidence={data.confidence} confidenceSource={data.confidence_source} />
+
+      {/* 4. Primary exports */}
+      {data.report && <ReportLinks report={data.report} conversation={conversation ?? [{ query: data.query, response: data }]} />}
+
+      {/* 5. Supporting evidence */}
       {data.visual_evidence && (
         <EvidencePanel evidence={data.visual_evidence} />
       )}
 
-      {/* 5. Report Links */}
-      {data.report && <ReportLinks report={data.report} conversation={conversation ?? [{ query: data.query, response: data }]} />}
-
-      {/* 6. Execution Trace */}
+      {/* 6. Execution audit */}
       {data.auditable_execution_trace && (
         <ExecutionTrace trace={data.auditable_execution_trace} />
       )}

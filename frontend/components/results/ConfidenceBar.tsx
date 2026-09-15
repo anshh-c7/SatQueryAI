@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Info, ShieldAlert } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 
 interface ConfidenceBarProps {
   confidence: number; // float 0..1
@@ -21,9 +21,9 @@ export const ConfidenceBar: React.FC<ConfidenceBarProps> = ({
       : "bg-rose-500";
 
   return (
-    <div className="p-4 rounded-xl bg-stone-100/80 dark:bg-[#1C1917] border border-stone-200 dark:border-white/10 space-y-2">
+    <div className="rounded-xl border border-stone-200 bg-stone-100/80 p-3 dark:border-white/10 dark:bg-[#1C1917]">
       <div className="flex items-center justify-between text-xs">
-        <span className="font-medium text-secondary">Sequence Confidence</span>
+        <span className="flex items-center gap-1.5 font-medium text-secondary"><ShieldCheck className="h-3.5 w-3.5 text-accent" />Confidence</span>
         <span className="font-mono font-bold text-primary">{percent}%</span>
       </div>
 
@@ -35,14 +35,7 @@ export const ConfidenceBar: React.FC<ConfidenceBarProps> = ({
         />
       </div>
 
-      {/* Meta + Mandatory Caveat */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 text-[11px] text-secondary font-mono pt-1">
-        <span>Source: {confidenceSource}</span>
-        <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400">
-          <Info className="w-3 h-3 shrink-0" />
-          <span>Model output token probability distribution, not absolute ground truth.</span>
-        </div>
-      </div>
+      <span className="sr-only">Source: {confidenceSource}</span>
     </div>
   );
 };

@@ -5,6 +5,9 @@ export const metadata: Metadata = {
   title: "SatQuery AI — Agentic Vision-Language Assistant for Remote-Sensing Imagery",
   description:
     "Scientific instrument canvas for multi-band satellite imagery analysis, change detection, and spatial evidence reasoning (SIH 26167).",
+  icons: {
+    icon: "/logo.ico",
+  },
 };
 
 import { ToastContainer } from "@/components/ui/ToastContainer";
