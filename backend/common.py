@@ -85,6 +85,10 @@ def _sar_to_uint8(arr):
 
 def load_image(spec, max_dim=512):
     path = Path(spec["path"])
+    if not path.exists() and spec.get("_content"):
+        # Recover from a temp-file race or external cleanup while the request is alive.
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_bytes(spec["_content"])
     modality = spec.get("modality", "optical").lower()
 
     if path.suffix.lower() in {".png", ".jpg", ".jpeg"}:
