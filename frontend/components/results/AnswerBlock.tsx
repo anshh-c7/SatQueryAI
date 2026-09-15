@@ -164,7 +164,7 @@ export const AnswerBlock: React.FC<AnswerBlockProps> = ({
           <div className="w-7 h-7 rounded-full bg-accent/10 text-accent flex items-center justify-center">
             <Sparkles className="w-4 h-4" />
           </div>
-          <span className="font-semibold text-sm text-primary">Model Answer</span>
+          <span className="font-semibold text-sm text-primary">Plain-English Answer</span>
           <span className="text-xs font-mono px-2 py-0.5 rounded-full bg-accent/10 text-accent font-medium uppercase">
             {taskIntent}
           </span>

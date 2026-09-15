@@ -9,6 +9,7 @@ import { InputsTable } from "./InputsTable";
 import { EvidencePanel } from "./EvidencePanel";
 import { ExecutionTrace } from "./ExecutionTrace";
 import { ReportLinks } from "./ReportLinks";
+import { ResultsOverview } from "./ResultsOverview";
 import type { PdfConversationTurn } from "@/lib/conversationPdf";
 
 interface ResultsPanelProps {
@@ -21,9 +22,10 @@ interface ResultsPanelProps {
 
 export const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, imagePreviews = [], showImages = true, dense = false, conversation }) => {
   return (
-    <div className={`${dense ? "space-y-2" : "space-y-4"} w-full max-w-3xl mx-auto animate-fade-in-up`}>
+    <div className={`${dense ? "space-y-2" : "space-y-4"} w-full max-w-5xl mx-auto animate-fade-in-up`}>
       {showImages && imagePreviews.length > 0 && <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{imagePreviews.map((image) => <figure key={image.filename} className="overflow-hidden rounded-xl border border-stone-200 bg-white/60 dark:border-white/10 dark:bg-[#171512]"><img src={image.data_url} alt={image.filename} className="max-h-64 w-full object-contain" /><figcaption className="truncate px-3 py-2 text-xs text-secondary">{image.filename}</figcaption></figure>)}</div>}
-      {/* 1. Answer */}
+      {!dense && <ResultsOverview data={data} />}
+      {/* 1. Plain-English answer */}
       <AnswerBlock
         answer={data.answer}
         taskIntent={data.task_intent}

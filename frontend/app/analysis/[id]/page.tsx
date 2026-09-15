@@ -82,7 +82,7 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
         </div>
       </header>
 
-      <main className="relative z-10 px-4 py-8 max-w-4xl mx-auto space-y-6">
+      <main className="relative z-10 mx-auto w-full max-w-6xl space-y-6 px-4 py-8">
         {loading && (
           <div className="p-12 flex flex-col items-center justify-center space-y-3">
             <Loader2 className="w-8 h-8 text-accent animate-spin" />
