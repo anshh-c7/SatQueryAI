@@ -82,7 +82,7 @@ export const LoaderCore = ({
 
             <span
               className={cn(
-                "tracking-wide transition-colors duration-200 text-[#111827] dark:text-[#F3EEE7]",
+                "tracking-wide transition-colors duration-200 text-black dark:text-[#F3EEE7]",
                 isCurrent
                   ? "font-serif text-base sm:text-lg font-semibold"
                   : isCompleted
