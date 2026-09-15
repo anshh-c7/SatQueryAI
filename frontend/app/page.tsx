@@ -15,6 +15,7 @@ import { postAnalyze } from "@/lib/api/analyzeClient";
 import { saveAnalysis, saveChatMessage } from "@/lib/history";
 import type { SavedImagePreview } from "@/lib/history";
 import { createImagePreviewData } from "@/lib/imagePreview";
+import { saveConversationImages } from "@/lib/promptDraft";
 import { toast } from "@/store/useToastStore";
 import type { AnalyzeFormValues, AnalyzeResponse } from "@/lib/types/analyze";
 
@@ -128,6 +129,9 @@ export default function HomePage() {
           answer: turn.response.answer.slice(0, 3000),
         })),
       };
+      if (form.images.length > 0) {
+        void saveConversationImages(conversationId, form.images).catch(() => undefined);
+      }
       const res = await postAnalyze(requestForm);
 
       if (!res.ok) {

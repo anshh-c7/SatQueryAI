@@ -12,6 +12,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { getConversation, saveAnalysis, saveChatMessage, type SavedImagePreview } from "@/lib/history";
 import { createImagePreviewData } from "@/lib/imagePreview";
 import { postAnalyze } from "@/lib/api/analyzeClient";
+import { loadConversationImages, saveConversationImages } from "@/lib/promptDraft";
 import { toast } from "@/store/useToastStore";
 import type { AnalyzeFormValues, AnalyzeResponse } from "@/lib/types/analyze";
 
@@ -54,6 +55,17 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [refusal, setRefusal] = useState<string | null>(null);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
+  const [conversationImages, setConversationImages] = useState<AnalyzeFormValues["images"]>([]);
+
+  useEffect(() => {
+    let active = true;
+    void loadConversationImages(id).then((images) => {
+      if (active) setConversationImages(images);
+    }).catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, [id]);
 
   useEffect(() => {
     if (!refusal) return;
@@ -95,8 +107,17 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     }));
 
     try {
+      const restoredImages = form.images.length > 0 || conversationImages.length > 0
+        ? conversationImages
+        : await loadConversationImages(id);
+      const reusableImages = form.images.length > 0 ? form.images : restoredImages;
+      if (reusableImages.length > 0) {
+        setConversationImages(reusableImages);
+        void saveConversationImages(id, reusableImages).catch(() => undefined);
+      }
       const res = await postAnalyze({
         ...form,
+        images: reusableImages,
         conversationId: id,
         conversationContext: conversation.slice(-6).map((turn) => ({
           query: turn.query,

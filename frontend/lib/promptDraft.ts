@@ -53,3 +53,26 @@ export async function clearPromptDraft() {
     request.onerror = () => reject(request.error ?? new Error("Could not clear prompt draft."));
   }).finally(() => database.close());
 }
+
+export async function saveConversationImages(conversationId: string, images: ImageSlot[]) {
+  if (typeof window === "undefined" || !window.indexedDB || images.length === 0) return;
+  const database = await openDraftDatabase();
+  await new Promise<void>((resolve, reject) => {
+    const request = database
+      .transaction(STORE_NAME, "readwrite")
+      .objectStore(STORE_NAME)
+      .put({ key: `conversation:${conversationId}`, query: "", images } satisfies StoredDraft);
+    request.onsuccess = () => resolve();
+    request.onerror = () => reject(request.error ?? new Error("Could not save conversation images."));
+  }).finally(() => database.close());
+}
+
+export async function loadConversationImages(conversationId: string): Promise<ImageSlot[]> {
+  if (typeof window === "undefined" || !window.indexedDB) return [];
+  const database = await openDraftDatabase();
+  return new Promise<ImageSlot[]>((resolve, reject) => {
+    const request = database.transaction(STORE_NAME, "readonly").objectStore(STORE_NAME).get(`conversation:${conversationId}`);
+    request.onsuccess = () => resolve((request.result as StoredDraft | undefined)?.images ?? []);
+    request.onerror = () => reject(request.error ?? new Error("Could not read conversation images."));
+  }).finally(() => database.close());
+}
