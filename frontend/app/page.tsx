@@ -10,7 +10,6 @@ import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 import { SideNavbar } from "@/components/layout/SideNavbar";
 import { ImageWorkspace } from "@/components/results/ImageWorkspace";
 import { EnvironmentStatusBadge } from "@/components/common/EnvironmentStatusBadge";
-import { BackgroundVideo } from "@/components/common/BackgroundVideo";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { postAnalyze } from "@/lib/api/analyzeClient";
 import { saveAnalysis, saveChatMessage } from "@/lib/history";
@@ -190,8 +189,7 @@ export default function HomePage() {
 
   const workspaceTurn = [...conversation].reverse().find((turn) => turn.imagePreviews.length > 0);
   return (
-    <div className="relative min-h-screen w-screen bg-[#FAF6F0] text-primary dark:bg-[#0F0E0C] dark:text-[#F3EEE7] overflow-x-hidden selection:bg-accent/20 selection:text-primary transition-colors duration-300">
-      <BackgroundVideo />
+    <div className="relative min-h-screen w-screen bg-[#FAF6F0]/90 text-primary dark:bg-[#0F0E0C]/90 dark:text-[#F3EEE7] overflow-x-hidden selection:bg-accent/20 selection:text-primary transition-colors duration-300">
       <SideNavbar refreshKey={historyRefreshKey} onNewChat={handleNewAnalysis} onCollapsedChange={setSidebarCollapsed} />
       {/* Background aesthetics */}
       <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-[#FAF6F0]/85 via-[#F3E5D0]/80 to-[#EADCC9]/85 dark:hidden backdrop-blur-[24px]" />

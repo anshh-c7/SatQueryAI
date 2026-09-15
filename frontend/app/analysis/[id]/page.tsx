@@ -10,7 +10,6 @@ import { ProfileMenu } from "@/components/auth/ProfileMenu";
 import { toast } from "@/store/useToastStore";
 import { ReportVisuals } from "@/components/results/ReportVisuals";
 import type { AnalyzeResponse } from "@/lib/types/analyze";
-import { BackgroundVideo } from "@/components/common/BackgroundVideo";
 
 interface AnalysisPageProps {
   params: Promise<{
@@ -57,8 +56,7 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
   }, [id]);
 
   return (
-    <div className="relative min-h-screen w-screen bg-[#FAF6F0] dark:bg-[#0F0E0C] text-primary overflow-x-hidden selection:bg-accent/20 selection:text-primary transition-colors duration-300">
-      <BackgroundVideo />
+    <div className="relative min-h-screen w-screen bg-[#FAF6F0]/90 dark:bg-[#0F0E0C]/90 text-primary overflow-x-hidden selection:bg-accent/20 selection:text-primary transition-colors duration-300">
       <header className="relative z-20 px-6 py-4 flex items-center justify-between border-b border-stone-300/40 dark:border-white/10">
         <Link href="/" className="flex items-center gap-2.5 group">
           <div className="w-8 h-8 rounded-full bg-[#1C1917] dark:bg-[#1F1B17] text-white flex items-center justify-center shadow-xs">

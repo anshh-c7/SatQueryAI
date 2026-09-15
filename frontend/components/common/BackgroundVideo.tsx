@@ -4,7 +4,7 @@ export function BackgroundVideo() {
   return (
     <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden" aria-hidden="true">
       <video
-        className="h-full w-full object-cover opacity-[0.12] dark:opacity-[0.16]"
+        className="h-full w-full object-cover opacity-[0.15] dark:opacity-[0.19]"
         autoPlay
         muted
         loop
