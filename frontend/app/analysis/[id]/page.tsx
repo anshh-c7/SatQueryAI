@@ -73,7 +73,7 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
         <div className="flex items-center gap-3">
           <Link
             href="/"
-            className="flex items-center gap-1.5 text-xs text-secondary hover:text-primary transition-colors font-mono"
+            className="inline-flex items-center gap-1.5 rounded-full border border-stone-300/70 px-3 py-1.5 text-xs text-secondary hover:text-primary transition-colors font-mono dark:border-white/10"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>New Analysis</span>

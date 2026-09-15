@@ -361,7 +361,7 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
           <textarea ref={textareaRef} id="satquery-prompt" value={value} onChange={(e) => onChange(e.target.value)} onKeyDown={handleKeyDown} rows={1} disabled={isSubmitting} placeholder="Ask a follow-up..." className="min-h-8 max-h-24 flex-1 resize-none bg-transparent px-1 py-1 text-sm text-primary placeholder:text-secondary/60 focus:outline-none" />
           <button type="button" onClick={() => handleSubmit()} disabled={!canSubmit} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#7F4B30] text-white transition hover:bg-[#965A3B] disabled:opacity-30" aria-label="Send follow-up">{isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}</button>
         </div>
-        {images.length > 0 && <div className="absolute bottom-full left-2 z-20 mb-2 w-64 rounded-xl border border-stone-300/70 bg-[#FAF6F0] p-3 shadow-xl dark:border-white/10 dark:bg-[#171512]"><p className="mb-2 text-[10px] font-mono uppercase text-secondary">Attached for follow-up</p>{images.map((slot) => <p key={slot.file.name} className="truncate text-xs text-primary">{slot.file.name}</p>)}</div>}
+        {images.length > 0 && <div className="mt-2 max-h-20 overflow-y-auto rounded-xl border border-stone-300/70 bg-[#FAF6F0] p-2.5 shadow-subtle dark:border-white/10 dark:bg-[#171512]"><p className="mb-1 text-[10px] font-mono uppercase text-secondary">Attached for follow-up</p>{images.map((slot) => <p key={slot.file.name} className="truncate text-xs text-primary">{slot.file.name}</p>)}</div>}
       </div>
     );
   }

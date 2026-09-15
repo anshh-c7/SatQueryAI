@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { Globe } from "lucide-react";
+import { ArrowLeft, Globe } from "lucide-react";
 import { FrontierHero } from "@/components/home/FrontierHero";
 import { FrontierPromptBox } from "@/components/home/FrontierPromptBox";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
@@ -235,6 +235,13 @@ export default function HomePage() {
 
         {conversation.length > 0 && (
           <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col">
+            <div className="mb-3 flex items-center justify-between gap-3">
+              <div>
+                <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-secondary">Conversation</p>
+                <h1 className="font-serif text-2xl text-primary">Continue your analysis</h1>
+              </div>
+              <button type="button" onClick={handleNewAnalysis} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-stone-300/70 px-3 py-1.5 text-xs text-secondary transition hover:text-primary dark:border-white/10"><ArrowLeft className="h-3.5 w-3.5" /> New Query</button>
+            </div>
             <div className={`grid min-h-0 flex-1 gap-5 ${workspaceTurn ? "lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]" : "max-w-3xl w-full mx-auto"}`}>
               {workspaceTurn && <ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} />}
               <section className="flex min-h-0 min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 shadow-subtle dark:border-white/10 dark:bg-[#171512]/55">

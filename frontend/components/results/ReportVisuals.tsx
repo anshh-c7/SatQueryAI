@@ -11,21 +11,21 @@ export function ReportVisuals({ data }: ReportVisualsProps) {
   const changedPercent = Math.min(100, Math.max(0, (evidence?.changed_pixel_fraction ?? 0) * 100));
   const regionCount = evidence?.region_count ?? 0;
   const regions = evidence?.regions ?? [];
-  const inputCount = data.inputs?.length ?? 0;
-  const modalityCounts = (data.inputs ?? []).reduce<Record<string, number>>((counts, input) => {
-    counts[input.modality] = (counts[input.modality] ?? 0) + 1;
-    return counts;
-  }, {});
-  const modalityEntries = Object.entries(modalityCounts);
-  const modalityTotal = modalityEntries.reduce((sum, [, count]) => sum + count, 0) || 1;
-  const pieStops = modalityEntries.length === 0
-    ? "transparent 0 100%"
-    : modalityEntries.map(([modality, count], index) => {
-      const colors = ["#C86D3B", "#4F8A8B", "#D6A84F"];
-      const start = modalityEntries.slice(0, index).reduce((sum, [, value]) => sum + (value / modalityTotal) * 100, 0);
-      const end = start + (count / modalityTotal) * 100;
-      return `${colors[index % colors.length]} ${start}% ${end}%`;
-    }).join(", ");
+  const modalityLabel = data.inputs?.length
+    ? data.inputs.length > 1 && data.task_intent === "cross_modal"
+      ? "Cross-modal"
+      : data.inputs.length > 1
+        ? "Bi-temporal"
+        : "Single"
+    : "-";
+  const modalities = data.inputs?.map((input) => input.modality.toUpperCase()).join(", ") || "-";
+  const captureDates = data.inputs?.map((input) => input.timestamp).filter(Boolean).join(" -> ") || "-";
+  const outputFields = [
+    ["Target User Role", "-"],
+    ["Data Source & Modality", `${modalityLabel} / ${modalities}`],
+    ["Location & Capture Dates", captureDates],
+    ["AI Confidence Score", `${Math.round(data.confidence * 100)}%`],
+  ];
 
   return (
     <section className="space-y-4 rounded-2xl border border-stone-300/70 bg-white/65 p-4 shadow-subtle dark:border-white/10 dark:bg-[#171512]/80 sm:p-5">
@@ -40,10 +40,12 @@ export function ReportVisuals({ data }: ReportVisualsProps) {
           <div className="mt-2 flex justify-between text-[10px] font-mono text-secondary"><span>Region share of detected change</span><span>{regionCount} region{regionCount === 1 ? "" : "s"}</span></div>
         </div>
         <div className="min-w-0 rounded-xl border border-stone-200/80 bg-white/60 p-3 dark:border-white/10 dark:bg-[#1C1917]">
-          <div className="mb-3 flex items-center justify-between gap-2"><span className="text-xs font-semibold text-primary">Input modality mix</span><span className="font-mono text-xs text-secondary">{inputCount} total</span></div>
-          <div className="flex items-center gap-4">
-            {modalityEntries.length > 0 ? <div className="h-28 w-28 shrink-0 rounded-full" style={{ background: `conic-gradient(${pieStops})` }} aria-label="Input modality pie chart" role="img" /> : <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-full border border-dashed border-stone-300/70 text-center text-[10px] text-secondary dark:border-white/10">Not enough data</div>}
-            <div className="min-w-0 space-y-2 text-xs">{modalityEntries.length === 0 ? <span className="text-secondary">No modality data available.</span> : modalityEntries.map(([modality, count], index) => <div key={modality} className="flex items-center gap-2"><span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: ["#C86D3B", "#4F8A8B", "#D6A84F"][index % 3] }} /><span className="truncate text-secondary">{modality}</span><span className="ml-auto font-mono text-primary">{count}</span></div>)}</div>
+          <div className="mb-3 text-xs font-semibold text-primary">Output parameters</div>
+          <div className="overflow-x-auto rounded-lg border border-stone-200/70 dark:border-white/10">
+            <table className="w-full min-w-[22rem] text-left text-xs">
+              <thead className="bg-stone-100/80 font-mono text-secondary dark:bg-[#171512]"><tr><th className="px-3 py-2">Field</th><th className="px-3 py-2">Received answer</th></tr></thead>
+              <tbody className="divide-y divide-stone-200/70 dark:divide-white/10">{outputFields.map(([field, value]) => <tr key={field}><th className="px-3 py-2 align-top font-medium text-secondary">{field}</th><td className="break-words px-3 py-2 align-top text-primary">{value || "-"}</td></tr>)}</tbody>
+            </table>
           </div>
         </div>
       </div>
