@@ -189,10 +189,10 @@ export default function HomePage() {
 
   const workspaceTurn = [...conversation].reverse().find((turn) => turn.imagePreviews.length > 0);
   return (
-    <div className="relative min-h-screen w-screen bg-[#FAF6F0]/90 text-primary dark:bg-[#0F0E0C]/90 dark:text-[#F3EEE7] overflow-x-hidden selection:bg-accent/20 selection:text-primary transition-colors duration-300">
+    <div className="relative min-h-screen w-screen bg-[#FAF6F0]/65 text-primary dark:bg-[#0F0E0C]/75 dark:text-[#F3EEE7] overflow-x-hidden selection:bg-accent/20 selection:text-primary transition-colors duration-300">
       <SideNavbar refreshKey={historyRefreshKey} onNewChat={handleNewAnalysis} onCollapsedChange={setSidebarCollapsed} />
       {/* Background aesthetics */}
-      <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-[#FAF6F0]/85 via-[#F3E5D0]/80 to-[#EADCC9]/85 dark:hidden backdrop-blur-[24px]" />
+      <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-[#FAF6F0]/25 via-[#F3E5D0]/20 to-[#EADCC9]/25 dark:hidden backdrop-blur-[8px]" />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,_rgba(200,109,59,0.08)_0%,_transparent_75%)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,_rgba(200,109,59,0.05)_0%,_transparent_75%)]" />
 
       {/* Reappearing brand when the navigation is fully closed. */}

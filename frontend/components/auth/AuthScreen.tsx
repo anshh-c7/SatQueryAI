@@ -96,7 +96,7 @@ export function AuthScreen({ configurationError, authMessage }: { configurationE
   const inputClassName = "mt-1.5 w-full rounded-lg border border-stone-300 bg-white/80 px-3 py-2.5 text-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-white/10 dark:bg-[#0F0E0C]";
 
   return (
-    <main className="relative min-h-screen flex items-center justify-center bg-[#FAF6F0]/90 dark:bg-[#0F0E0C]/90 px-4 py-10 text-primary dark:text-[#F3EEE7]">
+    <main className="relative min-h-screen flex items-center justify-center bg-[#FAF6F0]/65 dark:bg-[#0F0E0C]/75 px-4 py-10 text-primary dark:text-[#F3EEE7]">
       <div className="absolute right-16 top-4"><ThemeToggle popoverPlacement="bottom" /></div>
       <section className="w-full max-w-md rounded-2xl border border-stone-300/70 bg-white/70 p-7 shadow-[0_24px_70px_-30px_rgba(78,59,42,0.35)] dark:border-white/10 dark:bg-[#171512]">
         <div className="mb-8 flex items-center justify-between gap-2">

@@ -168,7 +168,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
 
   const workspaceTurn = [...conversation].reverse().find((turn) => turn.imagePreviews.length > 0);
   return (
-    <div className="relative min-h-screen w-screen overflow-x-hidden bg-[#FAF6F0]/90 text-primary transition-colors duration-300 dark:bg-[#0F0E0C]/90 dark:text-[#F3EEE7]">
+    <div className="relative min-h-screen w-screen overflow-x-hidden bg-[#FAF6F0]/65 text-primary transition-colors duration-300 dark:bg-[#0F0E0C]/75 dark:text-[#F3EEE7]">
       <SideNavbar
         refreshKey={historyRefreshKey}
         onNewChat={() => router.push("/")}
