@@ -28,6 +28,12 @@ export type AnalyzeResult =
   | { ok: true; data: AnalyzeResponse }
   | { ok: false; status: number; detail: string };
 
+function reportBackendStatus(status: "offline" | "maintenance") {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new CustomEvent("satquery-backend-status", { detail: status }));
+  }
+}
+
 export async function postAnalyze(form: AnalyzeFormValues): Promise<AnalyzeResult> {
   const fd = new FormData();
 
@@ -45,21 +51,29 @@ export async function postAnalyze(form: AnalyzeFormValues): Promise<AnalyzeResul
   const timestamps = form.images.map((s) => s.timestamp).join(",");
   fd.append("modalities", modalities);
   fd.append("timestamps", timestamps);
-  fd.append("highlights", JSON.stringify(form.highlightOverrides ?? form.images.map((slot) => slot.highlight ?? null)));
-
   for (const slot of form.images) {
     fd.append("files", slot.file);
   }
 
-  const res = await fetch("/api/analyze", {
-    method: "POST",
-    body: fd,
-  });
+  let res: Response;
+  try {
+    res = await fetch("/api/analyze", {
+      method: "POST",
+      body: fd,
+      cache: "no-store",
+    });
+  } catch (error) {
+    reportBackendStatus("offline");
+    throw error;
+  }
 
   if (res.ok) {
     const data: AnalyzeResponse = await res.json();
     return { ok: true, data };
   }
+
+  if (res.status === 502 || res.status === 503) reportBackendStatus("offline");
+  else if (res.status >= 500) reportBackendStatus("maintenance");
 
   // 400 from backend → render detail verbatim (never auto-retry or substitute)
   let detail = `Server error ${res.status}`;

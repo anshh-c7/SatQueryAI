@@ -54,7 +54,12 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [refusal, setRefusal] = useState<string | null>(null);
   const [historyRefreshKey, setHistoryRefreshKey] = useState(0);
-  const [highlightOverrides, setHighlightOverrides] = useState<Array<[number, number, number, number] | null>>([]);
+
+  useEffect(() => {
+    if (!refusal) return;
+    const timeout = window.setTimeout(() => setRefusal(null), 7000);
+    return () => window.clearTimeout(timeout);
+  }, [refusal]);
 
   useEffect(() => {
     if (!user) return;
@@ -73,8 +78,6 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
     };
   }, [id, user]);
 
-  const focusQuery = () => document.getElementById("satquery-prompt")?.focus();
-
   const handleSubmitForm = async (form: AnalyzeFormValues) => {
     if (!user || isSubmitting) return;
     setIsSubmitting(true);
@@ -89,24 +92,12 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       filename: image.filename,
       data_url: image.data.preview,
       bounds: image.data.bounds,
-      highlight: form.images.find((slot) => slot.file.name === image.filename)?.highlight,
     }));
-
-    const chatSave = await saveChatMessage({
-      userId: user.id,
-      turnId: id,
-      role: "user",
-      content: form.query,
-    });
-    if (chatSave.error) {
-      toast.error("Prompt was not saved", chatSave.error.message);
-    }
 
     try {
       const res = await postAnalyze({
         ...form,
         conversationId: id,
-        highlightOverrides: highlightOverrides.length > 0 ? highlightOverrides : undefined,
         conversationContext: conversation.slice(-6).map((turn) => ({
           query: turn.query,
           answer: turn.response.answer.slice(0, 3000),
@@ -114,11 +105,23 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       });
       if (!res.ok) {
         setRefusal(res.detail);
+        setIsSubmitting(false);
+        toast.error("Analysis failed", res.detail);
         return;
       }
 
       const nextTurn = { query: form.query, response: res.data, imagePreviews: generatedPreviews };
       setConversation((current) => [...current, nextTurn]);
+
+      const chatSave = await saveChatMessage({
+        userId: user.id,
+        turnId: id,
+        role: "user",
+        content: form.query,
+      });
+      if (chatSave.error) {
+        toast.error("Prompt was not saved", chatSave.error.message);
+      }
 
       const analysisSave = await saveAnalysis(user.id, form.query, res.data);
       if (analysisSave.error) toast.error("Analysis history was not saved", analysisSave.error.message);
@@ -133,27 +136,21 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
       if (assistantSave.error) toast.error("Model response was not saved", assistantSave.error.message);
       setHistoryRefreshKey((value) => value + 1);
     } catch (error) {
-      setRefusal(error instanceof Error ? error.message : "The analysis could not be completed.");
+      const message = error instanceof Error ? error.message : "The analysis could not be completed.";
+      setRefusal(message);
+      setIsSubmitting(false);
+      toast.error("Analysis failed", message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const workspaceTurn = [...conversation].reverse().find((turn) => turn.imagePreviews.length > 0);
-  const updateWorkspaceHighlight = (index: number, highlight: [number, number, number, number] | undefined) => {
-    setHighlightOverrides((current) => {
-      const next = [...current];
-      next[index] = highlight ?? null;
-      return next;
-    });
-  };
-
   return (
     <div className="relative min-h-screen w-screen overflow-x-hidden bg-[#FAF6F0] text-primary transition-colors duration-300 dark:bg-[#0F0E0C] dark:text-[#F3EEE7]">
       <SideNavbar
         refreshKey={historyRefreshKey}
         onNewChat={() => router.push("/")}
-        onSearchQuery={focusQuery}
         onCollapsedChange={setSidebarCollapsed}
       />
       <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-[#FAF6F0]/85 via-[#F3E5D0]/80 to-[#EADCC9]/85 backdrop-blur-[24px] dark:hidden" />
@@ -181,7 +178,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             <div className="flex flex-1 items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-accent" /></div>
           ) : (
             <div className={`grid min-h-0 flex-1 gap-5 ${workspaceTurn ? "lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]" : "mx-auto w-full max-w-3xl"}`}>
-              {workspaceTurn && <ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} onHighlightChange={updateWorkspaceHighlight} />}
+              {workspaceTurn && <ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} />}
               <section className="flex min-h-0 min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 shadow-subtle dark:border-white/10 dark:bg-[#171512]/55">
                 <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain pr-1">
                   {conversation.map((turn, index) => (

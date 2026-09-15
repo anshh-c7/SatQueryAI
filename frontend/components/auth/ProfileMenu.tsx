@@ -13,9 +13,15 @@ function formatJoinDate(value: string | undefined) {
   }).format(new Date(value));
 }
 
-export function ProfileMenu() {
-  const { user, signOut } = useAuth();
+interface ProfileMenuProps {
+  popoverPlacement?: "top" | "bottom";
+  fitContainer?: boolean;
+}
+
+export function ProfileMenu({ popoverPlacement = "bottom", fitContainer = false }: ProfileMenuProps) {
+  const { user, signOut, deleteAccount } = useAuth();
   const [open, setOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   if (!user) return null;
 
@@ -28,12 +34,22 @@ export function ProfileMenu() {
     .slice(0, 2)
     .toUpperCase();
 
+  const handleDeleteAccount = async () => {
+    if (deleting || !window.confirm("Delete your account and all saved analyses? This cannot be undone.")) return;
+    setDeleting(true);
+    const result = await deleteAccount();
+    if (result.error) {
+      setDeleting(false);
+      window.alert(result.error.message);
+    }
+  };
+
   return (
-    <div className="relative">
+    <div className={fitContainer ? "relative w-full" : "relative"}>
       <button
         type="button"
         onClick={() => setOpen((value) => !value)}
-        className="glass-pill flex items-center gap-2 rounded-full px-2 py-1.5 text-xs text-secondary hover:text-primary"
+        className={`glass-pill flex items-center gap-2 rounded-full px-2 py-1.5 text-xs text-secondary hover:text-primary ${fitContainer ? "w-full justify-start" : ""}`}
         title="Open profile"
         aria-label="Open profile"
         aria-expanded={open}
@@ -45,7 +61,7 @@ export function ProfileMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-11 z-40 w-72 rounded-xl border border-stone-300/70 bg-[#FAF6F0] p-4 shadow-xl dark:border-white/10 dark:bg-[#171512]">
+        <div className={`absolute z-40 ${fitContainer ? "left-0 right-auto w-full" : "right-0 w-72"} max-w-[calc(100vw-2rem)] rounded-xl border border-stone-300/70 bg-[#FAF6F0] p-4 shadow-xl dark:border-white/10 dark:bg-[#171512] ${popoverPlacement === "top" ? "bottom-full mb-2" : "top-11"}`}>
           <div className="flex items-center gap-3 border-b border-stone-200 pb-3 dark:border-white/10">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#1C1917] text-sm font-semibold text-white dark:bg-[#342D27]">
               {initials || <UserRound className="h-4 w-4" />}
@@ -76,6 +92,14 @@ export function ProfileMenu() {
           >
             <LogOut className="h-3.5 w-3.5" />
             Sign out
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleDeleteAccount()}
+            disabled={deleting}
+            className="mt-2 flex w-full items-center justify-center rounded-lg px-3 py-2 text-xs font-medium text-rose-600 transition hover:bg-rose-500/10 disabled:opacity-50 dark:text-rose-300"
+          >
+            {deleting ? "Deleting account..." : "Delete account"}
           </button>
         </div>
       )}

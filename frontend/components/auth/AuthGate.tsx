@@ -4,7 +4,7 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { AuthScreen } from "@/components/auth/AuthScreen";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
-  const { user, loading, configured } = useAuth();
+  const { user, loading, configured, authMessage } = useAuth();
 
   if (!configured) {
     return (
@@ -16,5 +16,5 @@ export function AuthGate({ children }: { children: React.ReactNode }) {
     return <div className="min-h-screen bg-[#FAF6F0] dark:bg-[#0F0E0C]" />;
   }
 
-  return user ? <>{children}</> : <AuthScreen />;
+  return user ? <>{children}</> : <AuthScreen authMessage={authMessage ?? undefined} />;
 }

@@ -6,16 +6,17 @@ import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { ProfileMenu } from "@/components/auth/ProfileMenu";
 import { RecentAnalyses } from "@/components/history/RecentAnalyses";
 import { useAuth } from "@/components/auth/AuthProvider";
+import { EnvironmentStatusBadge } from "@/components/common/EnvironmentStatusBadge";
 
 interface SideNavbarProps {
   refreshKey: number;
   onNewChat: () => void;
-  onSearchQuery: () => void;
   onCollapsedChange: (collapsed: boolean) => void;
 }
 
-export function SideNavbar({ refreshKey, onNewChat, onSearchQuery, onCollapsedChange }: SideNavbarProps) {
+export function SideNavbar({ refreshKey, onNewChat, onCollapsedChange }: SideNavbarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [searchRequest, setSearchRequest] = useState(0);
   const { signOut } = useAuth();
 
   const collapse = () => {
@@ -39,21 +40,21 @@ export function SideNavbar({ refreshKey, onNewChat, onSearchQuery, onCollapsedCh
   return (
     <aside className="fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-stone-300/50 bg-[#F3E5D0]/90 p-3 shadow-[8px_0_30px_rgba(78,59,42,0.06)] backdrop-blur-2xl animate-navbar-reveal dark:border-white/10 dark:bg-[#171512]/95">
       <div className="flex items-center justify-between px-1">
-        <div className="flex items-center gap-2"><span className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1C1917] text-white"><Globe className="h-4 w-4" /></span><span className="font-serif text-xl text-primary">SatQuery <em className="text-accent">AI</em></span></div>
+        <div className="flex min-w-0 items-center gap-1.5"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1C1917] text-white"><Globe className="h-4 w-4" /></span><span className="shrink-0 font-serif text-xl text-primary">SatQuery <em className="text-accent">AI</em></span><EnvironmentStatusBadge /></div>
         <button type="button" onClick={collapse} className="rounded-lg p-2 text-secondary transition hover:bg-black/5 hover:text-primary dark:hover:bg-white/5" aria-label="Close navigation" title="Close navigation"><ChevronRight className="h-4 w-4 rotate-180" /></button>
       </div>
 
       <div className="mt-8 space-y-2">
         <button type="button" onClick={onNewChat} className="flex w-full items-center gap-3 rounded-xl bg-[#1C1917] px-3 py-2.5 text-sm font-medium text-white shadow-subtle transition hover:bg-[#342D27]"><MessageSquarePlus className="h-4 w-4" />New Query</button>
-        <button type="button" onClick={onSearchQuery} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-secondary transition hover:bg-black/5 hover:text-primary dark:hover:bg-white/5"><Search className="h-4 w-4" />Search Query</button>
+        <button type="button" onClick={() => setSearchRequest((value) => value + 1)} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-secondary transition hover:bg-black/5 hover:text-primary dark:hover:bg-white/5"><Search className="h-4 w-4" />Search Query</button>
       </div>
 
-      <div className="mt-8 min-h-0 flex-1"><RecentAnalyses refreshKey={refreshKey} embedded /></div>
+      <div className="mt-8 min-h-0 flex-1"><RecentAnalyses refreshKey={refreshKey} embedded searchRequest={searchRequest} /></div>
 
       <div className="mt-4 flex min-w-0 items-center justify-between gap-2 border-t border-stone-300/50 pt-3 dark:border-white/10">
-        <div className="min-w-0"><ProfileMenu /></div>
+        <div className="min-w-0 flex-1"><ProfileMenu popoverPlacement="top" fitContainer /></div>
         <div className="flex shrink-0 items-center gap-1">
-          <ThemeToggle />
+          <ThemeToggle popoverPlacement="top" tooltipPlacement="top" />
           <button type="button" onClick={() => void signOut()} className="rounded-lg p-2 text-secondary transition hover:bg-rose-500/10 hover:text-rose-600" title="Sign out" aria-label="Sign out"><LogOut className="h-4 w-4" /></button>
         </div>
       </div>

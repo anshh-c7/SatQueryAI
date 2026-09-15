@@ -100,7 +100,6 @@ export interface AnalyzeFormValues {
   bands?: string;       // default "1,2,3"
   dataset?: string;     // default "operational"
   conversationId?: string;
-  highlightOverrides?: Array<[number, number, number, number] | null>;
   conversationContext?: Array<{
     query: string;
     answer: string;

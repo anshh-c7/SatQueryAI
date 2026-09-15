@@ -5,7 +5,12 @@ import { useThemeStore, ThemeMode } from "@/store/useThemeStore";
 import { Sun, Moon, Laptop, Check } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 
-export const ThemeToggle: React.FC = () => {
+interface ThemeToggleProps {
+  popoverPlacement?: "top" | "bottom";
+  tooltipPlacement?: "top" | "bottom";
+}
+
+export const ThemeToggle: React.FC<ThemeToggleProps> = ({ popoverPlacement = "bottom", tooltipPlacement = "bottom" }) => {
   const { theme, resolvedTheme, setTheme, initTheme } = useThemeStore();
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -65,7 +70,7 @@ export const ThemeToggle: React.FC = () => {
 
   return (
     <div ref={containerRef} className="relative shrink-0">
-      <Tooltip side="bottom" align="end" content={mounted ? `Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)}` : "Theme"}>
+      <Tooltip side={tooltipPlacement} align="end" content={mounted ? `Theme: ${theme.charAt(0).toUpperCase() + theme.slice(1)}` : "Theme"}>
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
@@ -79,7 +84,7 @@ export const ThemeToggle: React.FC = () => {
 
       {/* Popover Dropdown Menu */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-2 z-50 w-36 max-w-[calc(100vw-2rem)] glass-card rounded-2xl p-1.5 shadow-[0_16px_36px_rgba(78,59,42,0.18)] dark:shadow-[0_16px_36px_rgba(0,0,0,0.6)] border border-white/70 dark:border-white/10 dark:bg-[#1F1B17]/95 animate-fade-in-up space-y-0.5">
+        <div className={`absolute right-0 z-50 w-36 max-w-[calc(100vw-2rem)] glass-card rounded-2xl p-1.5 shadow-[0_16px_36px_rgba(78,59,42,0.18)] dark:shadow-[0_16px_36px_rgba(0,0,0,0.6)] border border-white/70 dark:border-white/10 dark:bg-[#1F1B17]/95 animate-fade-in-up space-y-0.5 ${popoverPlacement === "top" ? "bottom-full mb-2" : "top-full mt-2"}`}>
           {options.map((opt) => {
             const isSelected = theme === opt.mode;
             return (

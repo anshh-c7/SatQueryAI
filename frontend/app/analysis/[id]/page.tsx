@@ -7,6 +7,7 @@ import { fetchReportJson } from "@/lib/api/reportClient";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { ProfileMenu } from "@/components/auth/ProfileMenu";
+import { toast } from "@/store/useToastStore";
 import type { AnalyzeResponse } from "@/lib/types/analyze";
 
 interface AnalysisPageProps {
@@ -20,6 +21,12 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
   const [data, setData] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!error) return;
+    const timeout = window.setTimeout(() => setError(null), 7000);
+    return () => window.clearTimeout(timeout);
+  }, [error]);
 
   useEffect(() => {
     let isMounted = true;
@@ -36,6 +43,7 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
         setData(res.data);
       } else {
         setError(res.detail);
+        toast.error("Report unavailable", res.detail);
       }
     }
 

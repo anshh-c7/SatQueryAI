@@ -8,15 +8,16 @@ import {
   FileImage,
   Loader2,
   Plus,
-  Calendar,
   ChevronDown,
   ChevronUp,
   PenLine,
   Eraser,
+  SquareDashed,
   Check,
 } from "lucide-react";
 import type { ImageSlot, Modality, AnalyzeFormValues } from "@/lib/types/analyze";
 import { createImagePreview } from "@/lib/imagePreview";
+import { clearPromptDraft, loadPromptDraft, savePromptDraft } from "@/lib/promptDraft";
 
 interface FrontierPromptBoxProps {
   value: string;
@@ -32,14 +33,19 @@ const MODALITY_OPTIONS: { value: Modality; label: string }[] = [
   { value: "sar", label: "SAR" },
 ];
 
-const ACCEPTED_EXTENSIONS = ".tif,.tiff,.png,.jpg,.jpeg";
+const ACCEPTED_EXTENSIONS = ".tif,.tiff,.png,.jpg";
+const ACCEPTED_FILE_EXTENSIONS = new Set([".tif", ".tiff", ".png", ".jpg"]);
 
-function ImageSlotCard({
+function isSupportedImage(file: File) {
+  const extension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
+  return ACCEPTED_FILE_EXTENSIONS.has(extension);
+}
+
+function LegacyHighlightImageSlotCard({
   slot,
   index,
   onRemove,
   onModalityChange,
-  onTimestampChange,
   onHighlightChange,
   preview,
 }: {
@@ -47,16 +53,16 @@ function ImageSlotCard({
   index: number;
   onRemove: () => void;
   onModalityChange: (m: Modality) => void;
-  onTimestampChange: (t: string) => void;
   onHighlightChange: (highlight: [number, number, number, number] | undefined) => void;
   preview: string | null;
 }) {
   const [drawing, setDrawing] = useState(false);
   const [start, setStart] = useState<[number, number] | null>(null);
   const [editorOpen, setEditorOpen] = useState(false);
-  const [editorTool, setEditorTool] = useState<"pen" | "eraser">("pen");
+  const [editorTool, setEditorTool] = useState<"rectangle" | "pen" | "eraser">("rectangle");
   const [draftHighlight, setDraftHighlight] = useState<[number, number, number, number] | undefined>(slot.highlight);
   const [drawingHighlight, setDrawingHighlight] = useState<[number, number, number, number] | undefined>(undefined);
+  const [freehandPoints, setFreehandPoints] = useState<[number, number][]>([]);
   const imageRef = useRef<HTMLImageElement | null>(null);
 
   useEffect(() => {
@@ -72,22 +78,25 @@ function ImageSlotCard({
   };
 
   const finishHighlight = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!drawing || !start || editorTool !== "pen") return;
+    if (!drawing || !start || editorTool === "eraser") return;
     const end = getPoint(event);
-    const x1 = Math.min(start[0], end[0]);
-    const y1 = Math.min(start[1], end[1]);
-    const x2 = Math.max(start[0], end[0]);
-    const y2 = Math.max(start[1], end[1]);
+    const points = editorTool === "pen" ? [...freehandPoints, end] : [start, end];
+    const x1 = Math.min(...points.map(([x]) => x));
+    const y1 = Math.min(...points.map(([, y]) => y));
+    const x2 = Math.max(...points.map(([x]) => x));
+    const y2 = Math.max(...points.map(([, y]) => y));
     setDrawing(false);
     setStart(null);
     const completed: [number, number, number, number] = [x1, y1, x2, y2];
     if (x2 - x1 > 0.02 && y2 - y1 > 0.02) setDraftHighlight(completed);
+    setFreehandPoints([]);
     setDrawingHighlight(undefined);
   };
 
   const updateDrawingHighlight = (event: React.PointerEvent<HTMLDivElement>) => {
-    if (!drawing || !start || editorTool !== "pen") return;
+    if (!drawing || !start || editorTool === "eraser") return;
     const [endX, endY] = getPoint(event);
+    if (editorTool === "pen") setFreehandPoints((points) => [...points, [endX, endY]]);
     setDrawingHighlight([
       Math.min(start[0], endX), Math.min(start[1], endY),
       Math.max(start[0], endX), Math.max(start[1], endY),
@@ -99,35 +108,40 @@ function ImageSlotCard({
     setEditorOpen(false);
     setDrawing(false);
     setStart(null);
+    setFreehandPoints([]);
   };
 
   return (
-    <div className="flex flex-col gap-1.5 p-2.5 rounded-xl bg-stone-200/50 dark:bg-[#1F1B17] border border-stone-300/60 dark:border-white/10 animate-fade-in-up">
-      {preview ? <div className="relative self-start inline-block w-fit max-w-full" onDragStart={(event) => event.preventDefault()}><img draggable={false} src={preview} alt={`Preview of ${slot.file.name}`} className="block max-h-44 max-w-full w-auto h-auto rounded-lg bg-black/5 dark:bg-black/20" />{slot.highlight && <div className="pointer-events-none absolute inset-0"><div className="absolute border-2 border-dotted border-accent bg-accent/20" style={{ left: `${slot.highlight[0] * 100}%`, top: `${slot.highlight[1] * 100}%`, width: `${(slot.highlight[2] - slot.highlight[0]) * 100}%`, height: `${(slot.highlight[3] - slot.highlight[1]) * 100}%` }} /></div>}</div> : <div className="flex h-20 items-center justify-center rounded-lg bg-stone-300/40 text-xs text-secondary dark:bg-black/20">Preparing preview...</div>}
-      {preview && <div className="flex items-center gap-2"><button type="button" onClick={() => { setDraftHighlight(slot.highlight); setEditorTool("pen"); setEditorOpen(true); }} className="inline-flex items-center gap-1 rounded-md border border-stone-300/70 px-2 py-1 text-[10px] font-mono text-secondary transition-colors hover:border-accent hover:text-accent dark:border-white/10"><PenLine className="h-3 w-3" /> {slot.highlight ? "Edit zone" : "Highlight zone"}</button>{!slot.highlight && <span className="text-[10px] font-mono text-secondary">Open the pen to draw a focus area.</span>}</div>}
+    <div className="flex w-36 shrink-0 flex-col gap-1.5 rounded-xl border border-stone-300/60 bg-stone-200/50 p-2 dark:border-white/10 dark:bg-[#1F1B17]">
+      {preview ? <div className="relative inline-block shrink-0" style={{ width: 128 }} onDragStart={(event) => event.preventDefault()}><img draggable={false} src={preview} alt={`Preview of ${slot.file.name}`} className="block rounded-lg bg-black/5 object-cover dark:bg-black/20" style={{ width: 128, height: 80 }} /><button type="button" onClick={() => { setDraftHighlight(slot.highlight); setEditorTool("rectangle"); setEditorOpen(true); }} className="absolute right-1 top-1 z-10 inline-flex items-center gap-1 rounded-md bg-[#1C1917]/90 px-2 py-1 text-[10px] font-semibold text-white shadow-md transition hover:bg-accent" aria-label={slot.highlight ? "Edit highlighted area" : "Highlight an area"} title={slot.highlight ? "Edit highlighted area" : "Highlight an area"}><PenLine className="h-3 w-3" /> <span>{slot.highlight ? "Edit" : "Highlight"}</span></button>{slot.highlight && <div className="pointer-events-none absolute inset-0"><div className="absolute border-2 border-dotted border-accent bg-accent/20" style={{ left: `${slot.highlight[0] * 100}%`, top: `${slot.highlight[1] * 100}%`, width: `${(slot.highlight[2] - slot.highlight[0]) * 100}%`, height: `${(slot.highlight[3] - slot.highlight[1]) * 100}%` }} /></div>}</div> : <div className="flex h-20 w-32 shrink-0 items-center justify-center rounded-lg bg-stone-300/40 text-xs text-secondary dark:bg-black/20">Preparing preview...</div>}
       {slot.highlight && <button type="button" onClick={() => onHighlightChange(undefined)} className="self-start text-[10px] font-mono text-accent hover:underline">Clear highlighted zone</button>}
 
       {editorOpen && preview && <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/75 p-4 backdrop-blur-sm" role="dialog" aria-label={`Highlight ${slot.file.name}`}>
         <div className="flex max-h-[92vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl border border-white/15 bg-[#171512] shadow-2xl">
           <div className="flex items-center justify-between border-b border-white/10 px-4 py-3 text-white">
             <div><p className="text-sm font-semibold">Highlight an area</p><p className="text-[10px] font-mono text-white/60">Draw only the region the model should analyze</p></div>
-            <div className="flex items-center gap-1"><button type="button" onClick={() => setEditorTool("pen")} className={`rounded-lg p-2 ${editorTool === "pen" ? "bg-accent text-white" : "text-white/70 hover:bg-white/10"}`} aria-label="Pen tool" title="Pen tool"><PenLine className="h-4 w-4" /></button><button type="button" onClick={() => { setEditorTool("eraser"); setDraftHighlight(undefined); }} className={`rounded-lg p-2 ${editorTool === "eraser" ? "bg-accent text-white" : "text-white/70 hover:bg-white/10"}`} aria-label="Erase highlight" title="Erase highlight"><Eraser className="h-4 w-4" /></button><button type="button" onClick={commitHighlight} className="ml-2 rounded-lg bg-emerald-600 p-2 text-white hover:bg-emerald-500" aria-label="Apply highlight" title="Apply highlight"><Check className="h-4 w-4" /></button></div>
+            <div className="flex items-center gap-1"><button type="button" onClick={() => setEditorTool("rectangle")} className={`inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs ${editorTool === "rectangle" ? "bg-accent text-white" : "text-white/70 hover:bg-white/10"}`} aria-label="Rectangle selection tool" title="Rectangle selection tool"><SquareDashed className="h-4 w-4" /><span>Rectangle</span></button><button type="button" onClick={() => setEditorTool("pen")} className={`inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs ${editorTool === "pen" ? "bg-accent text-white" : "text-white/70 hover:bg-white/10"}`} aria-label="Freeform pen tool" title="Freeform pen tool"><PenLine className="h-4 w-4" /><span>Pen</span></button><button type="button" onClick={() => { setEditorTool("eraser"); setDraftHighlight(undefined); setFreehandPoints([]); setDrawingHighlight(undefined); }} className={`inline-flex items-center gap-1 rounded-lg px-2 py-2 text-xs ${editorTool === "eraser" ? "bg-accent text-white" : "text-white/70 hover:bg-white/10"}`} aria-label="Erase highlight" title="Erase highlight"><Eraser className="h-4 w-4" /><span>Erase</span></button></div>
           </div>
           <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-black p-3 sm:p-6" onDragStart={(event) => { event.preventDefault(); event.stopPropagation(); }} onDrop={(event) => { event.preventDefault(); event.stopPropagation(); }}>
-            <div className={`relative self-start inline-block w-fit max-h-[72vh] max-w-full select-none ${editorTool === "pen" ? "cursor-crosshair" : "cursor-cell"}`} onPointerDown={(event) => { if (editorTool !== "pen") return; event.currentTarget.setPointerCapture(event.pointerId); setStart(getPoint(event)); setDrawingHighlight([getPoint(event)[0], getPoint(event)[1], getPoint(event)[0], getPoint(event)[1]]); setDrawing(true); }} onPointerMove={updateDrawingHighlight} onPointerUp={finishHighlight} onPointerCancel={() => { setDrawing(false); setStart(null); setDrawingHighlight(undefined); }}>
+            <div className={`relative self-start inline-block w-fit max-h-[72vh] max-w-full select-none ${editorTool === "pen" ? "cursor-crosshair" : editorTool === "rectangle" ? "cursor-crosshair" : "cursor-cell"}`} onPointerDown={(event) => { if (editorTool === "eraser") return; event.currentTarget.setPointerCapture(event.pointerId); const point = getPoint(event); setStart(point); setFreehandPoints(editorTool === "pen" ? [point] : []); setDrawingHighlight([point[0], point[1], point[0], point[1]]); setDrawing(true); }} onPointerMove={updateDrawingHighlight} onPointerUp={finishHighlight} onPointerCancel={() => { setDrawing(false); setStart(null); setFreehandPoints([]); setDrawingHighlight(undefined); }}>
               <img ref={imageRef} draggable={false} src={preview} alt={`Highlight editor for ${slot.file.name}`} className="block max-h-[72vh] max-w-full w-auto h-auto object-contain" />
+              {freehandPoints.length > 1 && <svg className="pointer-events-none absolute inset-0 h-full w-full" viewBox="0 0 1 1" preserveAspectRatio="none"><polyline points={freehandPoints.map(([x, y]) => `${x},${y}`).join(" ")} fill="none" stroke="#C86D3B" strokeWidth="0.008" vectorEffect="non-scaling-stroke" /></svg>}
               {(drawingHighlight ?? draftHighlight) && <div className="pointer-events-none absolute border-2 border-dotted border-accent bg-accent/25" style={{ left: `${(drawingHighlight ?? draftHighlight)![0] * 100}%`, top: `${(drawingHighlight ?? draftHighlight)![1] * 100}%`, width: `${((drawingHighlight ?? draftHighlight)![2] - (drawingHighlight ?? draftHighlight)![0]) * 100}%`, height: `${((drawingHighlight ?? draftHighlight)![3] - (drawingHighlight ?? draftHighlight)![1]) * 100}%` }} />}
             </div>
+          </div>
+          <div className="flex shrink-0 items-center justify-between gap-3 border-t border-white/10 bg-[#171512] px-4 py-3 text-white">
+            <span className="text-xs text-white/65">Finalize this highlighted area</span>
+            <button type="button" onClick={commitHighlight} className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-emerald-600 px-4 py-2 text-xs font-semibold text-white shadow-lg transition hover:bg-emerald-500" aria-label="Apply highlight" title="Apply highlight"><Check className="h-4 w-4" /> Apply</button>
           </div>
         </div>
       </div>}
       {/* Filename row */}
-      <div className="flex items-center gap-2">
+      <div className="flex min-w-0 items-center gap-1.5">
         <FileImage className="w-3.5 h-3.5 text-accent shrink-0" />
-        <span className="font-mono text-xs text-primary font-medium truncate max-w-[200px]">
+        <span className="min-w-0 flex-1 truncate font-mono text-[10px] font-medium text-primary">
           {slot.file.name}
         </span>
-        <span className="text-[10px] text-secondary font-mono ml-auto shrink-0">
+        <span className="shrink-0 text-[9px] font-mono text-secondary">
           {(slot.file.size / (1024 * 1024)).toFixed(1)} MB
         </span>
         <button
@@ -140,9 +154,8 @@ function ImageSlotCard({
         </button>
       </div>
 
-      {/* Modality + Timestamp row */}
+      {/* Modality selector */}
       <div className="flex items-center gap-2 pl-5">
-        {/* Modality selector */}
         <select
           value={slot.modality}
           onChange={(e) => onModalityChange(e.target.value as Modality)}
@@ -156,18 +169,39 @@ function ImageSlotCard({
           ))}
         </select>
 
-        {/* Timestamp */}
-        <div className="flex items-center gap-1 text-xs text-secondary">
-          <Calendar className="w-3 h-3 shrink-0" />
-          <input
-            type="date"
-            value={slot.timestamp}
-            onChange={(e) => onTimestampChange(e.target.value)}
-            className="bg-white/60 dark:bg-[#171512] border border-stone-300/70 dark:border-white/10 rounded-lg px-2 py-1 text-xs text-primary focus:outline-none focus:ring-1 focus:ring-accent/40 cursor-pointer"
-            title="Acquisition date (required for change detection)"
-          />
-        </div>
       </div>
+    </div>
+  );
+}
+
+function ImageSlotCard({
+  slot,
+  index,
+  onRemove,
+  onModalityChange,
+  preview,
+}: {
+  slot: ImageSlot;
+  index: number;
+  onRemove: () => void;
+  onModalityChange: (modality: Modality) => void;
+  preview: string | null;
+}) {
+  return (
+    <div className="flex w-36 shrink-0 flex-col gap-1.5 rounded-xl border border-stone-300/60 bg-white/45 p-2 shadow-subtle dark:border-white/10 dark:bg-[#1F1B17]">
+      {preview ? (
+        <img src={preview} alt={`Preview of ${slot.file.name}`} className="block h-20 w-full rounded-lg bg-black/5 object-cover dark:bg-black/20" style={{ width: 128, height: 80 }} />
+      ) : (
+        <div className="flex h-20 w-32 items-center justify-center rounded-lg bg-stone-300/40 text-xs text-secondary dark:bg-black/20">Preparing preview...</div>
+      )}
+      <div className="flex min-w-0 items-center gap-1.5">
+        <FileImage className="h-3.5 w-3.5 shrink-0 text-accent" />
+        <span className="min-w-0 flex-1 truncate font-mono text-[10px] font-medium text-primary">{slot.file.name}</span>
+        <button type="button" onClick={onRemove} className="shrink-0 rounded p-0.5 text-secondary transition hover:text-rose-500" title={`Remove image ${index + 1}`} aria-label={`Remove image ${index + 1}`}><X className="h-3.5 w-3.5" /></button>
+      </div>
+      <select value={slot.modality} onChange={(event) => onModalityChange(event.target.value as Modality)} className="w-full appearance-none rounded-lg border border-stone-300/70 bg-white/70 px-2 py-1.5 text-[11px] font-medium text-primary shadow-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-white/10 dark:bg-[#171512]" title="Image modality" aria-label={`Modality for ${slot.file.name}`}>
+        {MODALITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
+      </select>
     </div>
   );
 }
@@ -188,6 +222,48 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
 
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const draftHydratedRef = useRef(false);
+
+  useEffect(() => {
+    let active = true;
+    void loadPromptDraft().then((draft) => {
+      if (!active) return;
+      let savedQuery = "";
+      try {
+        savedQuery = localStorage.getItem("satquery_draft_query") ?? "";
+      } catch {
+        // Draft persistence is best-effort when browser storage is unavailable.
+      }
+      if (draft) {
+        if (!value.trim() && draft.query) onChange(draft.query);
+        if (images.length === 0 && draft.images.length > 0) setImages(draft.images);
+      } else if (!value.trim() && savedQuery) {
+        onChange(savedQuery);
+      }
+      draftHydratedRef.current = true;
+    }).catch(() => {
+      draftHydratedRef.current = true;
+    });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!draftHydratedRef.current) return;
+    try {
+      localStorage.setItem("satquery_draft_query", value);
+    } catch {
+      // Draft persistence is best-effort when browser storage is unavailable.
+    }
+    void savePromptDraft(value, images).catch(() => undefined);
+  }, [value, images]);
+
+  useEffect(() => {
+    if (!fileError) return;
+    const timeout = window.setTimeout(() => setFileError(null), 7000);
+    return () => window.clearTimeout(timeout);
+  }, [fileError]);
 
   useEffect(() => {
     let active = true;
@@ -200,10 +276,17 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
   }, [images]);
 
   const addFiles = (incoming: File[]) => {
-    setFileError(null);
+    const unsupported = incoming.filter((file) => !isSupportedImage(file));
+    const supported = incoming.filter(isSupportedImage);
+    if (unsupported.length > 0) {
+      const names = unsupported.map((file) => file.name).join(", ");
+      setFileError(`Unsupported file format: ${names}. Use TIFF, PNG, or JPEG images.`);
+    } else {
+      setFileError(null);
+    }
     setImages((prev) => {
       const existingKeys = new Set(prev.map((slot) => `${slot.file.name}:${slot.file.size}:${slot.file.lastModified}`));
-      const newFiles = incoming.filter((file) => {
+      const newFiles = supported.filter((file) => {
         const key = `${file.name}:${file.size}:${file.lastModified}`;
         if (existingKeys.has(key)) return false;
         existingKeys.add(key);
@@ -224,16 +307,6 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
     setImages((prev) =>
       prev.map((s, i) => (i === idx ? { ...s, modality: m } : s))
     );
-  };
-
-  const updateTimestamp = (idx: number, t: string) => {
-    setImages((prev) =>
-      prev.map((s, i) => (i === idx ? { ...s, timestamp: t } : s))
-    );
-  };
-
-  const updateHighlight = (idx: number, highlight: [number, number, number, number] | undefined) => {
-    setImages((prev) => prev.map((slot, imageIndex) => imageIndex === idx ? { ...slot, highlight } : slot));
   };
 
   const handleFileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -264,6 +337,12 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
     setImages([]);
     setPreviews([]);
     setFileError(null);
+    try {
+      localStorage.removeItem("satquery_draft_query");
+    } catch {
+      // Draft persistence is best-effort when browser storage is unavailable.
+    }
+    void clearPromptDraft().catch(() => undefined);
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -322,7 +401,7 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
 
           {/* Image slots */}
           {images.length > 0 && (
-            <div className="flex flex-col gap-2">
+              <div className="flex flex-nowrap gap-2 overflow-x-auto pb-1">
               {images.map((slot, idx) => (
                 <ImageSlotCard
                   key={idx}
@@ -330,8 +409,6 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
                   index={idx}
                   onRemove={() => removeImage(idx)}
                   onModalityChange={(m) => updateModality(idx, m)}
-                  onTimestampChange={(t) => updateTimestamp(idx, t)}
-                  onHighlightChange={(highlight) => updateHighlight(idx, highlight)}
                   preview={previews[idx] ?? null}
                 />
               ))}
@@ -445,7 +522,7 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
 
       {/* Helper text */}
       <div className="flex items-center justify-between px-3 text-[11px] text-secondary/70 dark:text-[#91877D] font-mono">
-        <span>GeoTIFF / PNG / JPEG · 1 or 2 images · natural-language query</span>
+        <span>JPG / PNG / GeoTIFF · up to 5 images · natural-language query</span>
         <span>
           Press{" "}
           <kbd className="px-1 py-0.5 rounded bg-white/60 dark:bg-[#1F1B17] border border-stone-300 dark:border-white/10 text-secondary dark:text-[#B8AEA3]">

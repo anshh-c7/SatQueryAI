@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Globe } from "lucide-react";
 import { FrontierHero } from "@/components/home/FrontierHero";
@@ -9,6 +9,7 @@ import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 import { SideNavbar } from "@/components/layout/SideNavbar";
 import { ImageWorkspace } from "@/components/results/ImageWorkspace";
+import { EnvironmentStatusBadge } from "@/components/common/EnvironmentStatusBadge";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { postAnalyze } from "@/lib/api/analyzeClient";
 import { saveAnalysis, saveChatMessage } from "@/lib/history";
@@ -33,6 +34,8 @@ interface ConversationTurn {
   imagePreviews: SavedImagePreview[];
 }
 
+const HOME_STATE_KEY = "satquery_active_home_state";
+
 function waitForRemainingLoaderTime(startedAt: number) {
   const remaining = LOADER_MINIMUM_DURATION_MS - (Date.now() - startedAt);
   return remaining > 0 ? new Promise<void>((resolve) => setTimeout(resolve, remaining)) : Promise.resolve();
@@ -50,10 +53,48 @@ export default function HomePage() {
   const [conversation, setConversation] = useState<ConversationTurn[]>([]);
   const [conversationId, setConversationId] = useState(() => crypto.randomUUID());
   const [sessionImages, setSessionImages] = useState<AnalyzeFormValues["images"]>([]);
+  const restoredStateRef = useRef(false);
 
-  const focusQuery = () => {
-    document.getElementById("satquery-prompt")?.focus();
-  };
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(HOME_STATE_KEY);
+      if (saved) {
+        const state = JSON.parse(saved) as {
+          result?: AnalyzeResponse | null;
+          conversation?: ConversationTurn[];
+          imagePreviews?: SavedImagePreview[];
+          conversationId?: string;
+        };
+        if (state.result) setResult(state.result);
+        if (Array.isArray(state.conversation)) setConversation(state.conversation);
+        if (Array.isArray(state.imagePreviews)) setImagePreviews(state.imagePreviews);
+        if (state.conversationId) setConversationId(state.conversationId);
+      }
+    } catch {
+      localStorage.removeItem(HOME_STATE_KEY);
+    } finally {
+      restoredStateRef.current = true;
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!restoredStateRef.current) return;
+    try {
+      if (conversation.length === 0 && !result) {
+        localStorage.removeItem(HOME_STATE_KEY);
+      } else {
+        localStorage.setItem(HOME_STATE_KEY, JSON.stringify({ result, conversation, imagePreviews, conversationId }));
+      }
+    } catch {
+      // Large image data can exceed storage limits; the live page remains usable.
+    }
+  }, [conversation, result, imagePreviews, conversationId]);
+
+  React.useEffect(() => {
+    if (!refusal) return;
+    const timeout = window.setTimeout(() => setRefusal(null), 7000);
+    return () => window.clearTimeout(timeout);
+  }, [refusal]);
 
   const handleSelectSuggestion = (query: string) => {
     setPrompt(query);
@@ -74,20 +115,9 @@ export default function HomePage() {
           filename: image.filename,
           data_url: image.data.preview,
           bounds: image.data.bounds,
-          highlight: form.images.find((slot) => slot.file.name === image.filename)?.highlight,
         }));
       setImagePreviews(generatedPreviews);
       if (form.images.length > 0) setSessionImages(form.images);
-
-      if (user) {
-        const chatSave = await saveChatMessage({
-          userId: user.id,
-          turnId: conversationId,
-          role: "user",
-          content: form.query,
-        });
-        if (chatSave.error) toast.error("Prompt was not saved", chatSave.error.message);
-      }
 
       const requestForm = {
         ...form,
@@ -102,12 +132,22 @@ export default function HomePage() {
 
       if (!res.ok) {
         setRefusal(res.detail);
+        setIsSubmitting(false);
+        toast.error("Analysis failed", res.detail);
         return;
       }
 
       setResult(res.data);
       setConversation((current) => [...current, { query: form.query, response: res.data, imagePreviews: generatedPreviews }]);
       if (user) {
+        const chatSave = await saveChatMessage({
+          userId: user.id,
+          turnId: conversationId,
+          role: "user",
+          content: form.query,
+        });
+        if (chatSave.error) toast.error("Prompt was not saved", chatSave.error.message);
+
         const analysisSave = await saveAnalysis(user.id, form.query, res.data);
         if (analysisSave.error) toast.error("Analysis history was not saved", analysisSave.error.message);
 
@@ -124,6 +164,7 @@ export default function HomePage() {
     } catch (error) {
       const message = error instanceof Error ? error.message : "The analysis could not be completed.";
       setRefusal(message);
+      setIsSubmitting(false);
       toast.error("Analysis failed", message);
     } finally {
       await waitForRemainingLoaderTime(loaderStartedAt);
@@ -139,26 +180,26 @@ export default function HomePage() {
     setConversation([]);
     setConversationId(crypto.randomUUID());
     setSessionImages([]);
+    localStorage.removeItem(HOME_STATE_KEY);
   };
 
   const workspaceTurn = [...conversation].reverse().find((turn) => turn.imagePreviews.length > 0);
-  const updateWorkspaceHighlight = (index: number, highlight: [number, number, number, number] | undefined) => {
-    setSessionImages((current) => current.map((image, imageIndex) => imageIndex === index ? { ...image, highlight } : image));
-  };
-
   return (
     <div className="relative min-h-screen w-screen bg-[#FAF6F0] text-primary dark:bg-[#0F0E0C] dark:text-[#F3EEE7] overflow-x-hidden selection:bg-accent/20 selection:text-primary transition-colors duration-300">
-      <SideNavbar refreshKey={historyRefreshKey} onNewChat={handleNewAnalysis} onSearchQuery={focusQuery} onCollapsedChange={setSidebarCollapsed} />
+      <SideNavbar refreshKey={historyRefreshKey} onNewChat={handleNewAnalysis} onCollapsedChange={setSidebarCollapsed} />
       {/* Background aesthetics */}
       <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-[#FAF6F0]/85 via-[#F3E5D0]/80 to-[#EADCC9]/85 dark:hidden backdrop-blur-[24px]" />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,_rgba(200,109,59,0.08)_0%,_transparent_75%)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,_rgba(200,109,59,0.05)_0%,_transparent_75%)]" />
 
       {/* Reappearing brand when the navigation is fully closed. */}
       {sidebarCollapsed && <header className="relative z-20 px-6 py-4 animate-navbar-reveal">
+        <div className="flex items-center gap-3">
         <Link href="/" onClick={handleNewAnalysis} className="flex w-fit items-center gap-2.5 group">
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1C1917] text-white shadow-xs transition-transform group-hover:scale-105 dark:bg-[#1F1B17]"><Globe className="h-4 w-4" /></div>
           <span className="font-serif text-xl font-medium tracking-wide text-primary">SatQuery <em className="text-accent">AI</em></span>
         </Link>
+        <EnvironmentStatusBadge />
+        </div>
       </header>}
 
       {/* Main Content */}
@@ -191,7 +232,7 @@ export default function HomePage() {
         {conversation.length > 0 && (
           <div className="mx-auto flex min-h-0 w-full max-w-7xl flex-1 flex-col">
             <div className={`grid min-h-0 flex-1 gap-5 ${workspaceTurn ? "lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]" : "max-w-3xl w-full mx-auto"}`}>
-              {workspaceTurn && <ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} onHighlightChange={updateWorkspaceHighlight} />}
+              {workspaceTurn && <ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} />}
               <section className="flex min-h-0 min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 shadow-subtle dark:border-white/10 dark:bg-[#171512]/55">
                 <div className="min-h-0 flex-1 space-y-5 overflow-y-auto overscroll-contain pr-1">
                   {conversation.map((turn, index) => <article key={`${turn.query}-${index}`} className="space-y-3"><div className="ml-auto max-w-[90%] rounded-2xl rounded-br-md bg-[#1C1917] px-4 py-3 text-sm text-white shadow-subtle">{turn.query}</div><ResultsPanel data={turn.response} imagePreviews={turn.imagePreviews} showImages={false} dense conversation={conversation.map((item) => ({ query: item.query, response: item.response }))} /></article>)}

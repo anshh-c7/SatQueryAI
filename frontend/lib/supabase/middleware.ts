@@ -25,6 +25,16 @@ export async function updateSupabaseSession(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  try {
+    await supabase.auth.getUser();
+  } catch {
+    // A revoked or rotated refresh token must not be retried forever.
+    request.cookies.getAll()
+      .filter(({ name }) => name.startsWith("sb-") && name.includes("auth-token"))
+      .forEach(({ name }) => {
+        request.cookies.set(name, "");
+        response.cookies.set(name, "", { path: "/", maxAge: 0 });
+      });
+  }
   return response;
 }

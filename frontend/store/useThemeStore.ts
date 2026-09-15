@@ -34,7 +34,7 @@ function applyThemeToDocument(theme: ThemeMode): "light" | "dark" {
 
 export const useThemeStore = create<ThemeState>((set, get) => ({
   // Deterministic safe initial state during SSR and initial client pass
-  theme: "system",
+  theme: "light",
   resolvedTheme: "light",
 
   setTheme: (mode: ThemeMode) => {
@@ -53,7 +53,7 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
 
     try {
       const stored = localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode | null;
-      const initialTheme = (stored === "light" || stored === "dark" || stored === "system") ? stored : "system";
+      const initialTheme = (stored === "light" || stored === "dark" || stored === "system") ? stored : "light";
       const resolved = applyThemeToDocument(initialTheme);
       set({ theme: initialTheme, resolvedTheme: resolved });
 
@@ -73,7 +73,7 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
       }
     } catch (e) {
       const resolved = getSystemTheme();
-      set({ theme: "system", resolvedTheme: resolved });
+      set({ theme: "light", resolvedTheme: applyThemeToDocument("light") });
     }
   },
 }));
