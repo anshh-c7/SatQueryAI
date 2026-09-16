@@ -12,12 +12,12 @@ interface ThemeState {
 const THEME_STORAGE_KEY = "satquery_theme";
 
 function getSystemTheme(): "light" | "dark" {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
 function applyThemeToDocument(theme: ThemeMode): "light" | "dark" {
-  if (typeof window === "undefined") return "light";
+  if (typeof window === "undefined") return "dark";
 
   const resolved = theme === "system" ? getSystemTheme() : theme;
 
@@ -34,8 +34,8 @@ function applyThemeToDocument(theme: ThemeMode): "light" | "dark" {
 
 export const useThemeStore = create<ThemeState>((set, get) => ({
   // Deterministic safe initial state during SSR and initial client pass
-  theme: "light",
-  resolvedTheme: "light",
+  theme: "dark",
+  resolvedTheme: "dark",
 
   setTheme: (mode: ThemeMode) => {
     try {
@@ -53,7 +53,7 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
 
     try {
       const stored = localStorage.getItem(THEME_STORAGE_KEY) as ThemeMode | null;
-      const initialTheme = (stored === "light" || stored === "dark" || stored === "system") ? stored : "light";
+      const initialTheme = (stored === "light" || stored === "dark" || stored === "system") ? stored : "dark";
       const resolved = applyThemeToDocument(initialTheme);
       set({ theme: initialTheme, resolvedTheme: resolved });
 
@@ -73,7 +73,7 @@ export const useThemeStore = create<ThemeState>((set, get) => ({
       }
     } catch (e) {
       const resolved = getSystemTheme();
-      set({ theme: "light", resolvedTheme: applyThemeToDocument("light") });
+      set({ theme: "dark", resolvedTheme: applyThemeToDocument("dark") });
     }
   },
 }));

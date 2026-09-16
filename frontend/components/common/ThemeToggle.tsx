@@ -52,7 +52,7 @@ export const ThemeToggle: React.FC<ThemeToggleProps> = ({ popoverPlacement = "bo
   const renderIcon = () => {
     if (!mounted) {
       // Deterministic SVG icon matching initial server HTML to eliminate hydration errors
-      return <Sun className="w-3.5 h-3.5 text-accent" />;
+      return <Moon className="w-3.5 h-3.5 text-accent" />;
     }
     if (theme === "system") {
       return resolvedTheme === "dark" ? (
