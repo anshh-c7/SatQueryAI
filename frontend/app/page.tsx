@@ -9,7 +9,6 @@ import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 import { SideNavbar } from "@/components/layout/SideNavbar";
 import { ImageWorkspace } from "@/components/results/ImageWorkspace";
-import { EnvironmentStatusBadge } from "@/components/common/EnvironmentStatusBadge";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { postAnalyze } from "@/lib/api/analyzeClient";
 import { saveAnalysis, saveChatMessage } from "@/lib/history";
@@ -202,7 +201,6 @@ export default function HomePage() {
           <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1C1917] text-white shadow-xs transition-transform group-hover:scale-105 dark:bg-[#1F1B17]"><Globe className="h-4 w-4" /></div>
           <span className="font-serif text-xl font-medium tracking-wide text-primary">SatQuery <em className="text-accent">AI</em></span>
         </Link>
-        <EnvironmentStatusBadge />
         </div>
       </header>}
 

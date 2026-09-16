@@ -6,7 +6,6 @@ import { ThemeToggle } from "@/components/common/ThemeToggle";
 import { ProfileMenu } from "@/components/auth/ProfileMenu";
 import { RecentAnalyses } from "@/components/history/RecentAnalyses";
 import { useAuth } from "@/components/auth/AuthProvider";
-import { EnvironmentStatusBadge } from "@/components/common/EnvironmentStatusBadge";
 
 interface SideNavbarProps {
   refreshKey: number;
@@ -40,7 +39,7 @@ export function SideNavbar({ refreshKey, onNewChat, onCollapsedChange }: SideNav
   return (
     <aside className="fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-stone-300/50 bg-[#F3E5D0]/90 p-3 shadow-[8px_0_30px_rgba(78,59,42,0.06)] backdrop-blur-2xl animate-navbar-reveal dark:border-white/10 dark:bg-[#171512]/95">
       <div className="flex items-center justify-between px-1">
-        <div className="flex min-w-0 items-center gap-1.5"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1C1917] text-white"><Globe className="h-4 w-4" /></span><span className="shrink-0 font-serif text-xl text-primary">SatQuery <em className="text-accent">AI</em></span><EnvironmentStatusBadge /></div>
+        <div className="flex min-w-0 items-center gap-1.5"><span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#1C1917] text-white"><Globe className="h-4 w-4" /></span><span className="shrink-0 font-serif text-xl text-primary">SatQuery <em className="text-accent">AI</em></span></div>
         <button type="button" onClick={collapse} className="rounded-lg p-2 text-secondary transition hover:bg-black/5 hover:text-primary dark:hover:bg-white/5" aria-label="Close navigation" title="Close navigation"><ChevronRight className="h-4 w-4 rotate-180" /></button>
       </div>
 

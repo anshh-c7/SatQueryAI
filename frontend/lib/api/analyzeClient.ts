@@ -28,12 +28,6 @@ export type AnalyzeResult =
   | { ok: true; data: AnalyzeResponse }
   | { ok: false; status: number; detail: string };
 
-function reportBackendStatus(status: "offline" | "maintenance") {
-  if (typeof window !== "undefined") {
-    window.dispatchEvent(new CustomEvent("satquery-backend-status", { detail: status }));
-  }
-}
-
 export async function postAnalyze(form: AnalyzeFormValues): Promise<AnalyzeResult> {
   const fd = new FormData();
 
@@ -63,7 +57,6 @@ export async function postAnalyze(form: AnalyzeFormValues): Promise<AnalyzeResul
       cache: "no-store",
     });
   } catch (error) {
-    reportBackendStatus("offline");
     throw error;
   }
 
@@ -71,9 +64,6 @@ export async function postAnalyze(form: AnalyzeFormValues): Promise<AnalyzeResul
     const data: AnalyzeResponse = await res.json();
     return { ok: true, data };
   }
-
-  if (res.status === 502 || res.status === 503) reportBackendStatus("offline");
-  else if (res.status >= 500) reportBackendStatus("maintenance");
 
   // 400 from backend → render detail verbatim (never auto-retry or substitute)
   let detail = `Server error ${res.status}`;
