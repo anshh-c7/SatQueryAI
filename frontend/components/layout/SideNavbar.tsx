@@ -11,10 +11,11 @@ interface SideNavbarProps {
   refreshKey: number;
   onNewChat: () => void;
   onCollapsedChange: (collapsed: boolean) => void;
+  initialCollapsed?: boolean;
 }
 
-export function SideNavbar({ refreshKey, onNewChat, onCollapsedChange }: SideNavbarProps) {
-  const [collapsed, setCollapsed] = useState(false);
+export function SideNavbar({ refreshKey, onNewChat, onCollapsedChange, initialCollapsed = false }: SideNavbarProps) {
+  const [collapsed, setCollapsed] = useState(initialCollapsed);
   const [searchRequest, setSearchRequest] = useState(0);
   const { signOut } = useAuth();
 

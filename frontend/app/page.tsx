@@ -35,6 +35,7 @@ interface ConversationTurn {
 }
 
 const HOME_STATE_KEY = "satquery_active_home_state";
+const HOME_STATE_MAX_AGE_MS = 5 * 60 * 1000;
 
 function waitForRemainingLoaderTime(startedAt: number) {
   const remaining = LOADER_MINIMUM_DURATION_MS - (Date.now() - startedAt);
@@ -64,11 +65,17 @@ export default function HomePage() {
           conversation?: ConversationTurn[];
           imagePreviews?: SavedImagePreview[];
           conversationId?: string;
+          savedAt?: number;
         };
-        if (state.result) setResult(state.result);
-        if (Array.isArray(state.conversation)) setConversation(state.conversation);
-        if (Array.isArray(state.imagePreviews)) setImagePreviews(state.imagePreviews);
-        if (state.conversationId) setConversationId(state.conversationId);
+        const isFresh = typeof state.savedAt === "number" && Date.now() - state.savedAt <= HOME_STATE_MAX_AGE_MS;
+        if (isFresh) {
+          if (state.result) setResult(state.result);
+          if (Array.isArray(state.conversation)) setConversation(state.conversation);
+          if (Array.isArray(state.imagePreviews)) setImagePreviews(state.imagePreviews);
+          if (state.conversationId) setConversationId(state.conversationId);
+        } else {
+          localStorage.removeItem(HOME_STATE_KEY);
+        }
       }
     } catch {
       localStorage.removeItem(HOME_STATE_KEY);
@@ -83,7 +90,7 @@ export default function HomePage() {
       if (conversation.length === 0 && !result) {
         localStorage.removeItem(HOME_STATE_KEY);
       } else {
-        localStorage.setItem(HOME_STATE_KEY, JSON.stringify({ result, conversation, imagePreviews, conversationId }));
+        localStorage.setItem(HOME_STATE_KEY, JSON.stringify({ result, conversation, imagePreviews, conversationId, savedAt: Date.now() }));
       }
     } catch {
       // Large image data can exceed storage limits; the live page remains usable.
@@ -189,7 +196,7 @@ export default function HomePage() {
   const workspaceTurn = [...conversation].reverse().find((turn) => turn.imagePreviews.length > 0);
   return (
     <div className="relative min-h-screen w-screen bg-[#FAF6F0]/65 text-primary dark:bg-[#0F0E0C]/75 dark:text-[#F3EEE7] overflow-x-hidden selection:bg-accent/20 selection:text-primary transition-colors duration-300">
-      <SideNavbar refreshKey={historyRefreshKey} onNewChat={handleNewAnalysis} onCollapsedChange={setSidebarCollapsed} />
+      <SideNavbar refreshKey={historyRefreshKey} onNewChat={handleNewAnalysis} onCollapsedChange={setSidebarCollapsed} initialCollapsed />
       {/* Background aesthetics */}
       <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-[#FAF6F0]/25 via-[#F3E5D0]/20 to-[#EADCC9]/25 dark:hidden backdrop-blur-[8px]" />
       <div className="fixed inset-0 pointer-events-none bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,_rgba(200,109,59,0.08)_0%,_transparent_75%)] dark:bg-[radial-gradient(ellipse_80%_60%_at_50%_0%,_rgba(200,109,59,0.05)_0%,_transparent_75%)]" />
