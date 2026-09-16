@@ -43,7 +43,7 @@ function waitForRemainingLoaderTime(startedAt: number) {
 
 export default function HomePage() {
   const { user } = useAuth();
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
   const [prompt, setPrompt] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [result, setResult] = useState<AnalyzeResponse | null>(null);
