@@ -84,7 +84,7 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
         </Link>
 
         <div className="flex items-center gap-3">
-          <button type="button" onClick={() => router.back()} className="inline-flex items-center gap-1.5 rounded-full border border-stone-300/70 px-3 py-1.5 text-xs text-secondary hover:text-primary transition-colors font-mono dark:border-white/10">
+          <button type="button" onClick={() => window.history.length > 1 ? router.back() : router.push("/")} className="inline-flex items-center gap-1.5 rounded-full border border-stone-300/70 px-3 py-1.5 text-xs text-secondary hover:text-primary transition-colors font-mono dark:border-white/10">
             <ArrowLeft className="w-3.5 h-3.5" />
             <span>Escape</span>
           </button>
@@ -123,7 +123,7 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
             <p className="mt-2 text-xs text-secondary">Generated from the received analysis output. Visuals are derived from the response metrics and input modalities.</p>
           </div>
           <ReportVisuals data={data} />
-          <ResultsPanel data={data} imagePreviews={imagePreviews} showReportActions isReportPage />
+          <ResultsPanel data={data} imagePreviews={imagePreviews} showReportActions={false} />
         </>}
       </main>
     </div>
