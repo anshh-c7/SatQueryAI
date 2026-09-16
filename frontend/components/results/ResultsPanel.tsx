@@ -17,9 +17,11 @@ interface ResultsPanelProps {
   showImages?: boolean;
   dense?: boolean;
   conversation?: PdfConversationTurn[];
+  showReportActions?: boolean;
+  isReportPage?: boolean;
 }
 
-export const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, imagePreviews = [], showImages = true, dense = false, conversation }) => {
+export const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, imagePreviews = [], showImages = true, dense = false, conversation, showReportActions = true, isReportPage = false }) => {
   return (
     <div className={`${dense ? "space-y-2" : "space-y-4"} w-full max-w-5xl mx-auto animate-fade-in-up`}>
       {showImages && imagePreviews.length > 0 && <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{imagePreviews.map((image) => <figure key={image.filename} className="overflow-hidden rounded-xl border border-stone-200 bg-white/60 dark:border-white/10 dark:bg-[#171512]"><img src={image.data_url} alt={image.filename} className="max-h-64 w-full object-contain" /><figcaption className="truncate px-3 py-2 text-xs text-secondary">{image.filename}</figcaption></figure>)}</div>}
@@ -42,7 +44,7 @@ export const ResultsPanel: React.FC<ResultsPanelProps> = ({ data, imagePreviews 
       <ConfidenceBar confidence={data.confidence} confidenceSource={data.confidence_source} />
 
       {/* 4. Primary exports */}
-      {data.report && <ReportLinks report={data.report} conversation={conversation ?? [{ query: data.query, response: data }]} />}
+      {showReportActions && data.report && <ReportLinks report={data.report} imagePreviews={imagePreviews} isReportPage={isReportPage} conversation={conversation ?? [{ query: data.query, response: data, imagePreviews }]} />}
 
       {/* 5. Supporting evidence */}
       {data.visual_evidence && (

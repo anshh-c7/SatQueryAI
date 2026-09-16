@@ -2,6 +2,8 @@
 
 import React from "react";
 import { Sparkles, Clock, CheckCircle2 } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface AnswerBlockProps {
   answer: string;
@@ -181,7 +183,32 @@ export const AnswerBlock: React.FC<AnswerBlockProps> = ({
         </div>
       )}
       <div className={`${compact ? "text-sm" : "text-base sm:text-lg"} space-y-3 pl-1`}>
-        {tableOutput ? renderStructuredTable(tableOutput) : renderFormattedAnswer(answer)}
+        {tableOutput ? renderStructuredTable(tableOutput) : answer.trim() ? (
+          <div className="markdown-answer text-primary">
+            <ReactMarkdown
+              remarkPlugins={[remarkGfm]}
+              components={{
+                h1: ({ children }) => <h3 className="mt-4 text-lg font-semibold first:mt-0">{children}</h3>,
+                h2: ({ children }) => <h3 className="mt-4 text-base font-semibold first:mt-0">{children}</h3>,
+                h3: ({ children }) => <h4 className="mt-3 text-sm font-semibold first:mt-0">{children}</h4>,
+                p: ({ children }) => <p className="leading-relaxed">{children}</p>,
+                ul: ({ children }) => <ul className="list-disc space-y-1 pl-5">{children}</ul>,
+                ol: ({ children }) => <ol className="list-decimal space-y-1 pl-5">{children}</ol>,
+                li: ({ children }) => <li className="pl-1">{children}</li>,
+                blockquote: ({ children }) => <blockquote className="border-l-2 border-accent/60 pl-3 italic text-secondary">{children}</blockquote>,
+                a: ({ children, href }) => <a href={href} target="_blank" rel="noreferrer" className="text-accent underline underline-offset-2">{children}</a>,
+                code: ({ className, children, ...props }) => <code className={`${className ?? "rounded bg-stone-200/80 px-1 py-0.5 dark:bg-white/10"} font-mono text-[0.85em]`} {...props}>{children}</code>,
+                pre: ({ children }) => <pre className="overflow-x-auto rounded-lg bg-[#1C1917] p-3 text-xs leading-relaxed text-stone-100">{children}</pre>,
+                table: ({ children }) => <div className="overflow-x-auto rounded-lg border border-stone-200 dark:border-white/10"><table className="w-full min-w-[28rem] text-left text-xs">{children}</table></div>,
+                th: ({ children }) => <th className="bg-stone-100/80 px-3 py-2 font-semibold text-secondary dark:bg-[#1F1B17]">{children}</th>,
+                td: ({ children }) => <td className="border-t border-stone-200/70 px-3 py-2 align-top dark:border-white/10">{children}</td>,
+                hr: () => <hr className="border-stone-200 dark:border-white/10" />,
+              }}
+            >
+              {answer}
+            </ReactMarkdown>
+          </div>
+        ) : renderFormattedAnswer(answer)}
       </div>
     </div>
   );

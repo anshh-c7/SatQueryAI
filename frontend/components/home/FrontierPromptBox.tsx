@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import {
   ArrowRight,
+  CalendarDays,
   Paperclip,
   X,
   FileImage,
@@ -33,12 +34,17 @@ const MODALITY_OPTIONS: { value: Modality; label: string }[] = [
   { value: "sar", label: "SAR" },
 ];
 
-const ACCEPTED_EXTENSIONS = ".tif,.tiff,.png,.jpg";
-const ACCEPTED_FILE_EXTENSIONS = new Set([".tif", ".tiff", ".png", ".jpg"]);
+const ACCEPTED_EXTENSIONS = ".tif,.tiff,.png,.jpg,.jpeg";
+const ACCEPTED_FILE_EXTENSIONS = new Set([".tif", ".tiff", ".png", ".jpg", ".jpeg"]);
 
 function isSupportedImage(file: File) {
   const extension = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
-  return ACCEPTED_FILE_EXTENSIONS.has(extension);
+  return ACCEPTED_FILE_EXTENSIONS.has(extension) || file.type.startsWith("image/");
+}
+
+function todayAsDateInputValue() {
+  const today = new Date();
+  return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
 }
 
 function LegacyHighlightImageSlotCard({
@@ -179,12 +185,14 @@ function ImageSlotCard({
   index,
   onRemove,
   onModalityChange,
+  onTimestampChange,
   preview,
 }: {
   slot: ImageSlot;
   index: number;
   onRemove: () => void;
   onModalityChange: (modality: Modality) => void;
+  onTimestampChange: (timestamp: string) => void;
   preview: string | null;
 }) {
   return (
@@ -202,6 +210,11 @@ function ImageSlotCard({
       <select value={slot.modality} onChange={(event) => onModalityChange(event.target.value as Modality)} className="w-full appearance-none rounded-lg border border-stone-300/70 bg-white/70 px-2 py-1.5 text-[11px] font-medium text-primary shadow-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-white/10 dark:bg-[#171512]" title="Image modality" aria-label={`Modality for ${slot.file.name}`}>
         {MODALITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
       </select>
+      <label className="flex items-center gap-1.5 rounded-lg border border-stone-300/70 bg-white/70 px-2 py-1.5 text-[11px] text-secondary dark:border-white/10 dark:bg-[#171512]" title={`Date for ${slot.file.name}`}>
+        <CalendarDays className="h-3.5 w-3.5 shrink-0 text-accent" />
+        <span className="sr-only">Image date</span>
+        <input type="date" value={slot.timestamp || todayAsDateInputValue()} onChange={(event) => onTimestampChange(event.target.value)} className="min-w-0 w-full bg-transparent text-[11px] text-primary outline-none" aria-label={`Date for ${slot.file.name}`} />
+      </label>
     </div>
   );
 }
@@ -236,7 +249,7 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
       }
       if (draft) {
         if (!value.trim() && draft.query) onChange(draft.query);
-        if (images.length === 0 && draft.images.length > 0) setImages(draft.images);
+        if (images.length === 0 && draft.images.length > 0) setImages(draft.images.map((slot) => ({ ...slot, timestamp: slot.timestamp || todayAsDateInputValue() })));
       } else if (!value.trim() && savedQuery) {
         onChange(savedQuery);
       }
@@ -294,7 +307,7 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
       });
       const available = Math.max(0, 5 - prev.length);
       if (newFiles.length > available) setFileError("Maximum 5 unique images. Remove one first.");
-      return [...prev, ...newFiles.slice(0, available).map((file) => ({ file, modality: "optical" as Modality, timestamp: "" }))];
+      return [...prev, ...newFiles.slice(0, available).map((file) => ({ file, modality: "optical" as Modality, timestamp: todayAsDateInputValue() }))];
     });
   };
 
@@ -315,6 +328,17 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
       addFiles(Array.from(files));
     }
     e.target.value = "";
+  };
+
+  const handlePaste = (event: React.ClipboardEvent<HTMLTextAreaElement>) => {
+    const pastedImages = Array.from(event.clipboardData.items)
+      .filter((item) => item.kind === "file")
+      .map((item) => item.getAsFile())
+      .filter((file): file is File => Boolean(file));
+    if (pastedImages.length > 0) {
+      event.preventDefault();
+      addFiles(pastedImages);
+    }
   };
 
   const handleDrop = (e: React.DragEvent) => {
@@ -358,7 +382,7 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
         <div className="flex items-center gap-2 rounded-2xl border border-stone-300/80 bg-[#E5E7EB]/90 p-2 shadow-subtle dark:border-white/10 dark:bg-[#171512]">
           <button type="button" onClick={() => fileInputRef.current?.click()} disabled={isSubmitting} className="rounded-full p-2 text-secondary transition hover:bg-black/5 hover:text-primary dark:hover:bg-white/10" title="Attach a follow-up image" aria-label="Attach a follow-up image"><Paperclip className="h-4 w-4" /></button>
           <input ref={fileInputRef} type="file" accept={ACCEPTED_EXTENSIONS} multiple className="hidden" onChange={handleFileInputChange} />
-          <textarea ref={textareaRef} id="satquery-prompt" value={value} onChange={(e) => onChange(e.target.value)} onKeyDown={handleKeyDown} rows={1} disabled={isSubmitting} placeholder="Ask a follow-up..." className="min-h-8 max-h-24 flex-1 resize-none bg-transparent px-1 py-1 text-sm text-primary placeholder:text-secondary/60 focus:outline-none" />
+          <textarea ref={textareaRef} id="satquery-prompt" value={value} onChange={(e) => onChange(e.target.value)} onPaste={handlePaste} onKeyDown={handleKeyDown} rows={1} disabled={isSubmitting} placeholder="Ask a follow-up..." className="min-h-8 max-h-24 flex-1 resize-none bg-transparent px-1 py-1 text-sm text-primary placeholder:text-secondary/60 focus:outline-none" />
           <button type="button" onClick={() => handleSubmit()} disabled={!canSubmit} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#7F4B30] text-white transition hover:bg-[#965A3B] disabled:opacity-30" aria-label="Send follow-up">{isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ArrowRight className="h-4 w-4" />}</button>
         </div>
         {images.length > 0 && <div className="mt-2 max-h-20 overflow-y-auto rounded-xl border border-stone-300/70 bg-[#FAF6F0] p-2.5 shadow-subtle dark:border-white/10 dark:bg-[#171512]"><p className="mb-1 text-[10px] font-mono uppercase text-secondary">Attached for follow-up</p>{images.map((slot) => <p key={slot.file.name} className="truncate text-xs text-primary">{slot.file.name}</p>)}</div>}
@@ -409,6 +433,7 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
                   index={idx}
                   onRemove={() => removeImage(idx)}
                   onModalityChange={(m) => updateModality(idx, m)}
+                  onTimestampChange={(timestamp) => setImages((current) => current.map((item, itemIndex) => itemIndex === idx ? { ...item, timestamp } : item))}
                   preview={previews[idx] ?? null}
                 />
               ))}
@@ -426,6 +451,7 @@ export const FrontierPromptBox: React.FC<FrontierPromptBoxProps> = ({
             id="satquery-prompt"
             value={value}
             onChange={(e) => onChange(e.target.value)}
+            onPaste={handlePaste}
             onKeyDown={handleKeyDown}
             placeholder={
               images.length === 0

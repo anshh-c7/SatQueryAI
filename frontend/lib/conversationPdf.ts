@@ -1,9 +1,11 @@
 import { jsPDF } from "jspdf";
 import type { AnalyzeResponse } from "@/lib/types/analyze";
+import type { SavedImagePreview } from "@/lib/history";
 
 export interface PdfConversationTurn {
   query: string;
   response: AnalyzeResponse;
+  imagePreviews?: SavedImagePreview[];
 }
 
 function addWrappedText(document: jsPDF, text: string, x: number, y: number, width: number, fontSize = 10) {
@@ -39,7 +41,7 @@ export function downloadConversationPdf(turns: PdfConversationTurn[]) {
 
   document.setFont("helvetica", "bold");
   document.setFontSize(18);
-  document.text("SatQuery AI conversation", 16, y);
+  document.text("SatQuery AI report", 16, y);
   y += 8;
   document.setFont("helvetica", "normal");
   document.setFontSize(9);
@@ -54,6 +56,25 @@ export function downloadConversationPdf(turns: PdfConversationTurn[]) {
     y = addWrappedText(document, `Question: ${turn.query}`, 16, y, 178, 10) + 3;
     document.setFont("helvetica", "normal");
     y = addWrappedText(document, `Answer: ${turn.response.answer}`, 16, y, 178, 10) + 3;
+
+    if (turn.imagePreviews?.length) {
+      y = addSectionTitle(document, "Uploaded imagery", y + 2);
+      for (const image of turn.imagePreviews) {
+        if (y > 205) {
+          document.addPage();
+          y = 18;
+        }
+        const imageWidth = 52;
+        const imageHeight = 36;
+        try {
+          const format = image.data_url.startsWith("data:image/png") ? "PNG" : "JPEG";
+          document.addImage(image.data_url, format, 20, y, imageWidth, imageHeight, undefined, "FAST");
+          y += imageHeight + 5;
+        } catch {
+          y = addWrappedText(document, `Image: ${image.filename}`, 20, y, 174, 9) + 1;
+        }
+      }
+    }
 
     y = addSectionTitle(document, "Analysis fields", y);
     const fields = [
@@ -83,5 +104,7 @@ export function downloadConversationPdf(turns: PdfConversationTurn[]) {
     y += 8;
   });
 
-  document.save(`satquery-conversation-${new Date().toISOString().slice(0, 10)}.pdf`);
+  document.save(`satquery-report-${new Date().toISOString().slice(0, 10)}.pdf`);
 }
+
+export const downloadReportPdf = downloadConversationPdf;

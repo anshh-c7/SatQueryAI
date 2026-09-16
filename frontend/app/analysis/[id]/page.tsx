@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, use } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Globe, ArrowLeft, Loader2, AlertCircle } from "lucide-react";
 import { fetchReportJson } from "@/lib/api/reportClient";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
@@ -10,6 +11,7 @@ import { ProfileMenu } from "@/components/auth/ProfileMenu";
 import { toast } from "@/store/useToastStore";
 import { ReportVisuals } from "@/components/results/ReportVisuals";
 import type { AnalyzeResponse } from "@/lib/types/analyze";
+import type { SavedImagePreview } from "@/lib/history";
 
 interface AnalysisPageProps {
   params: Promise<{
@@ -19,9 +21,11 @@ interface AnalysisPageProps {
 
 export default function AnalysisPage({ params }: AnalysisPageProps) {
   const { id } = use(params);
+  const router = useRouter();
   const [data, setData] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [imagePreviews, setImagePreviews] = useState<SavedImagePreview[]>([]);
 
   useEffect(() => {
     if (!error) return;
@@ -55,6 +59,15 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
     };
   }, [id]);
 
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`satquery-report-images-${id}`);
+      if (saved) setImagePreviews(JSON.parse(saved) as SavedImagePreview[]);
+    } catch {
+      setImagePreviews([]);
+    }
+  }, [id]);
+
   return (
     <div className="relative min-h-screen w-screen bg-[#FAF6F0]/65 dark:bg-[#0F0E0C]/75 text-primary overflow-x-hidden selection:bg-accent/20 selection:text-primary transition-colors duration-300">
       <header className="relative z-20 px-6 py-4 flex items-center justify-between border-b border-stone-300/40 dark:border-white/10">
@@ -71,13 +84,10 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
         </Link>
 
         <div className="flex items-center gap-3">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1.5 rounded-full border border-stone-300/70 px-3 py-1.5 text-xs text-secondary hover:text-primary transition-colors font-mono dark:border-white/10"
-          >
+          <button type="button" onClick={() => router.back()} className="inline-flex items-center gap-1.5 rounded-full border border-stone-300/70 px-3 py-1.5 text-xs text-secondary hover:text-primary transition-colors font-mono dark:border-white/10">
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>New Analysis</span>
-          </Link>
+            <span>Escape</span>
+          </button>
           <ThemeToggle />
             <ProfileMenu />
         </div>
@@ -113,7 +123,7 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
             <p className="mt-2 text-xs text-secondary">Generated from the received analysis output. Visuals are derived from the response metrics and input modalities.</p>
           </div>
           <ReportVisuals data={data} />
-          <ResultsPanel data={data} />
+          <ResultsPanel data={data} imagePreviews={imagePreviews} showReportActions isReportPage />
         </>}
       </main>
     </div>
