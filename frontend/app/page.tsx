@@ -248,9 +248,9 @@ export default function HomePage() {
               </div>
               <button type="button" onClick={handleNewAnalysis} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-stone-300/70 px-3 py-1.5 text-xs text-secondary transition hover:text-primary dark:border-white/10"><ArrowLeft className="h-3.5 w-3.5" /> New Query</button>
             </div>
-            <div className={`grid min-h-0 w-full flex-1 items-stretch gap-0 ${workspaceTurn ? "lg:mx-auto lg:max-w-[1280px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" : "max-w-3xl mx-auto"}`}>
-              {workspaceTurn && <div className="box-border min-h-0 overscroll-contain lg:flex lg:h-[calc(100vh-9rem)] lg:items-start lg:overflow-y-auto lg:pb-8"><ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} data={workspaceTurn.response} /></div>}
-              <section className="box-border flex min-h-0 min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 pb-5 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55 lg:h-[calc(100vh-9rem)] lg:overflow-y-auto">
+            <div className={`grid min-h-0 w-full flex-1 items-stretch gap-2 ${workspaceTurn ? "lg:mx-auto lg:h-[calc(100vh-9rem)] lg:max-w-[1280px] lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" : "max-w-3xl mx-auto"}`}>
+              {workspaceTurn && <div className="box-border min-h-0 w-full overscroll-contain lg:flex lg:h-full lg:items-start lg:overflow-y-auto lg:pb-8"><ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} data={workspaceTurn.response} /></div>}
+              <section className="box-border flex h-full min-h-0 min-w-0 w-full flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 pb-5 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55 lg:overflow-y-auto">
                 <div className="space-y-5 pr-2 pb-2">
                   {conversation.map((turn, index) => <article key={`${turn.query}-${index}`} className="space-y-3"><Bubble align="end"><BubbleContent>{turn.query}</BubbleContent></Bubble><ResultsPanel data={turn.response} imagePreviews={turn.imagePreviews} showImages={false} dense conversation={conversation.map((item) => ({ query: item.query, response: item.response, imagePreviews: item.imagePreviews }))} /></article>)}
                 </div>

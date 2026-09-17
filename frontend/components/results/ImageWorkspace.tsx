@@ -125,7 +125,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
   }
 
   return (
-    <section className="relative flex h-auto min-h-0 flex-col gap-3 rounded-2xl border border-stone-300/70 bg-white/45 p-3 shadow-subtle dark:border-white/10 dark:bg-[#171512]/70">
+    <section className="relative flex h-auto min-h-0 w-full flex-col gap-3 rounded-2xl border border-stone-300/70 bg-white/45 p-3 shadow-subtle dark:border-white/10 dark:bg-[#171512]/70">
       <svg className="pointer-events-none absolute h-0 w-0" aria-hidden="true" focusable="false">
         <defs>
           <filter id="sar-color-map" colorInterpolationFilters="sRGB">
