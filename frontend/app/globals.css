@@ -259,12 +259,13 @@
 
   .multispectral-overlay {
     pointer-events: none;
-    mix-blend-mode: overlay;
+    mix-blend-mode: color;
     background:
-      repeating-conic-gradient(from 12deg at 48% 52%, rgba(0, 231, 255, 0.78) 0deg 18deg, rgba(255, 0, 190, 0.72) 18deg 38deg, rgba(255, 226, 0, 0.68) 38deg 58deg, rgba(83, 255, 75, 0.68) 58deg 76deg),
-      radial-gradient(circle at 48% 52%, transparent 0 12%, rgba(255, 0, 188, 0.75) 18%, transparent 28%, rgba(0, 232, 255, 0.72) 36%, transparent 46%, rgba(255, 221, 0, 0.65) 56%, transparent 68%);
-    background-blend-mode: screen, color-dodge;
-      opacity: 0.58;
+      repeating-radial-gradient(ellipse at 42% 48%, rgba(0, 235, 255, 0.86) 0 3%, rgba(31, 55, 211, 0.84) 5% 8%, rgba(255, 0, 191, 0.86) 10% 13%, rgba(255, 224, 0, 0.82) 15% 18%, rgba(72, 255, 99, 0.82) 20% 23%, rgba(255, 38, 119, 0.84) 25% 28%, rgba(0, 202, 255, 0.84) 30% 33%),
+      repeating-radial-gradient(ellipse at 68% 64%, rgba(255, 0, 190, 0.62) 0 4%, transparent 6% 12%, rgba(0, 232, 255, 0.66) 14% 18%, transparent 20% 27%, rgba(255, 221, 0, 0.58) 29% 33%, transparent 35% 43%),
+      linear-gradient(135deg, rgba(255, 0, 169, 0.42), rgba(0, 223, 255, 0.38) 42%, rgba(255, 221, 0, 0.36) 70%, rgba(68, 255, 96, 0.4));
+    background-blend-mode: screen, screen, color;
+    opacity: 0.72;
   }
 
   .select-menu-swish {
@@ -277,7 +278,6 @@
     to { opacity: 1; transform: translateY(0) scaleY(1) skewX(0); }
   }
 
-  /* Removed rotation animation */
 }
 
 @keyframes rotateBeam {
