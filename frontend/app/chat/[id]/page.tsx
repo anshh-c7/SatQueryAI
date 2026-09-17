@@ -201,8 +201,8 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           ) : (
             <div className={`grid min-h-0 w-full flex-1 items-start gap-5 ${workspaceTurn ? "lg:grid-cols-2" : "mx-auto w-full max-w-3xl"}`}>
               {workspaceTurn && <div className="lg:sticky lg:top-4"><ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} data={workspaceTurn.response} /></div>}
-              <section className="flex min-h-0 min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55">
-                <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-2">
+              <section className="flex min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55 lg:h-[calc(100vh-9rem)] lg:overflow-y-auto">
+                <div className="space-y-5 pr-2">
                   {conversation.map((turn, index) => (
                     <article key={`${turn.query}-${index}`} className="space-y-3">
                       <Bubble align="end"><BubbleContent>{turn.query}</BubbleContent></Bubble>

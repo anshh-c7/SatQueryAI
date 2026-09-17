@@ -250,8 +250,8 @@ export default function HomePage() {
             </div>
             <div className={`grid min-h-0 w-full flex-1 items-start gap-5 ${workspaceTurn ? "lg:grid-cols-2" : "max-w-3xl mx-auto"}`}>
               {workspaceTurn && <div className="lg:sticky lg:top-4"><ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} data={workspaceTurn.response} /></div>}
-              <section className="flex min-h-0 min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55">
-                <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-2">
+              <section className="flex min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55 lg:h-[calc(100vh-9rem)] lg:overflow-y-auto">
+                <div className="space-y-5 pr-2">
                   {conversation.map((turn, index) => <article key={`${turn.query}-${index}`} className="space-y-3"><Bubble align="end"><BubbleContent>{turn.query}</BubbleContent></Bubble><ResultsPanel data={turn.response} imagePreviews={turn.imagePreviews} showImages={false} dense conversation={conversation.map((item) => ({ query: item.query, response: item.response, imagePreviews: item.imagePreviews }))} /></article>)}
                 </div>
                 <div className="shrink-0 border-t border-stone-300/50 pt-3 dark:border-white/10"><FrontierPromptBox value={prompt} onChange={setPrompt} onSubmitPrompt={handleSubmitForm} isSubmitting={isSubmitting} compact /></div>
@@ -262,10 +262,6 @@ export default function HomePage() {
         {refusal && <p className="mx-auto mt-4 text-sm text-rose-600">{refusal}</p>}
       </main>
 
-      {sidebarCollapsed && <footer className="relative z-10 px-6 py-4 text-center text-xs text-secondary/70 dark:text-[#91877D] font-mono flex items-center justify-between border-t border-stone-300/40 dark:border-white/10 mt-12">
-        <span>SatQuery AI • Autonomous Geospatial Vision-Language Architecture</span>
-        <span className="text-secondary/50">SIH 26167 Hackathon Build</span>
-      </footer>}
     </div>
   );
 }
