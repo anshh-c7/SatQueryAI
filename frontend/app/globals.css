@@ -264,8 +264,7 @@
       repeating-conic-gradient(from 12deg at 48% 52%, rgba(0, 231, 255, 0.78) 0deg 18deg, rgba(255, 0, 190, 0.72) 18deg 38deg, rgba(255, 226, 0, 0.68) 38deg 58deg, rgba(83, 255, 75, 0.68) 58deg 76deg),
       radial-gradient(circle at 48% 52%, transparent 0 12%, rgba(255, 0, 188, 0.75) 18%, transparent 28%, rgba(0, 232, 255, 0.72) 36%, transparent 46%, rgba(255, 221, 0, 0.65) 56%, transparent 68%);
     background-blend-mode: screen, color-dodge;
-    opacity: 0.58;
-    animation: multispectralShift 8s linear infinite;
+      opacity: 0.58;
   }
 
   .select-menu-swish {
@@ -278,10 +277,7 @@
     to { opacity: 1; transform: translateY(0) scaleY(1) skewX(0); }
   }
 
-  @keyframes multispectralShift {
-    from { transform: rotate(0deg) scale(1.08); }
-    to { transform: rotate(360deg) scale(1.08); }
-  }
+  /* Removed rotation animation */
 }
 
 @keyframes rotateBeam {
