@@ -291,7 +291,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
 
       {fullscreen && (
         <div
-          className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 sm:p-10 transition-all duration-300 animate-in fade-in"
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black p-4 sm:p-10 transition-all duration-300 animate-in fade-in"
           onClick={closeFullscreen}
         >
           <div className="absolute left-1/2 top-6 z-[1001] flex -translate-x-1/2 items-center gap-1 rounded-xl border border-white/15 bg-white/10 p-1.5 text-white shadow-xl backdrop-blur-md" role="toolbar" aria-label="Image zoom controls">
