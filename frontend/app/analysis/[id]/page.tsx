@@ -12,6 +12,8 @@ import { toast } from "@/store/useToastStore";
 import { ReportVisuals } from "@/components/results/ReportVisuals";
 import type { AnalyzeResponse } from "@/lib/types/analyze";
 import type { SavedImagePreview } from "@/lib/history";
+import { getAnalysisByReportId } from "@/lib/history";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 interface AnalysisPageProps {
   params: Promise<{
@@ -21,6 +23,7 @@ interface AnalysisPageProps {
 
 export default function AnalysisPage({ params }: AnalysisPageProps) {
   const { id } = use(params);
+  const { user } = useAuth();
   const router = useRouter();
   const [data, setData] = useState<AnalyzeResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -47,8 +50,14 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
       if (res.ok) {
         setData(res.data);
       } else {
-        setError(res.detail);
-        toast.error("Report unavailable", res.detail);
+        const saved = user ? await getAnalysisByReportId(user.id, id) : { data: null, error: null };
+        if (saved.data?.response) {
+          setData(saved.data.response);
+        } else {
+          const detail = saved.error?.message ?? res.detail;
+          setError(detail);
+          toast.error("Report unavailable", detail);
+        }
       }
     }
 
@@ -57,7 +66,7 @@ export default function AnalysisPage({ params }: AnalysisPageProps) {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, user]);
 
   useEffect(() => {
     try {

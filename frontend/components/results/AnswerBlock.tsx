@@ -184,7 +184,7 @@ export const AnswerBlock: React.FC<AnswerBlockProps> = ({
           Explicit debug fixture: model inference and image interpretation were bypassed.
         </div>
       )}
-      <div className={`${compact ? "text-sm" : "text-base sm:text-lg"} space-y-3 pl-1`}>
+      <div className={`${compact ? "text-xs sm:text-sm" : "text-sm sm:text-base"} space-y-3 pl-1`}>
         {tableOutput ? renderStructuredTable(tableOutput) : answer.trim() ? (
           <div className="markdown-answer text-primary">
             <ReactMarkdown

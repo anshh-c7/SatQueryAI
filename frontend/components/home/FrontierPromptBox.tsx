@@ -19,6 +19,7 @@ import {
 import type { ImageSlot, Modality, AnalyzeFormValues } from "@/lib/types/analyze";
 import { createImagePreview } from "@/lib/imagePreview";
 import { clearPromptDraft, loadPromptDraft, savePromptDraft } from "@/lib/promptDraft";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface FrontierPromptBoxProps {
   value: string;
@@ -33,6 +34,12 @@ const MODALITY_OPTIONS: { value: Modality; label: string }[] = [
   { value: "multispectral", label: "Multispectral" },
   { value: "sar", label: "SAR" },
 ];
+
+function getModalityPreviewFilter(modality: Modality) {
+  if (modality === "sar") return "contrast(1.6) brightness(1.1) saturate(1.8) url(#upload-sar-color-map)";
+  if (modality === "multispectral") return "contrast(2.5) brightness(0.55) saturate(1.5)";
+  return "none";
+}
 
 const ACCEPTED_EXTENSIONS = ".tif,.tiff,.png,.jpg,.jpeg";
 const ACCEPTED_FILE_EXTENSIONS = new Set([".tif", ".tiff", ".png", ".jpg", ".jpeg"]);
@@ -195,10 +202,27 @@ function ImageSlotCard({
   onTimestampChange: (timestamp: string) => void;
   preview: string | null;
 }) {
+  const previewFilter = getModalityPreviewFilter(slot.modality);
+
   return (
     <div className="flex w-36 shrink-0 flex-col gap-1.5 rounded-xl border border-stone-300/60 bg-white/45 p-2 shadow-subtle dark:border-white/10 dark:bg-[#1F1B17]">
       {preview ? (
-        <img src={preview} alt={`Preview of ${slot.file.name}`} className="block h-20 w-full rounded-lg bg-black/5 object-cover dark:bg-black/20" style={{ width: 128, height: 80 }} />
+        <div className="relative h-20 w-32 overflow-hidden rounded-lg bg-black/5 dark:bg-black/20">
+          <img src={preview} alt={`Preview of ${slot.file.name}`} className="block h-20 w-32 object-cover transition-all duration-300 ease-in-out" style={{ filter: previewFilter }} />
+          {slot.modality === "multispectral" && <div className="multispectral-overlay absolute inset-0" aria-hidden="true" />}
+          <svg className="pointer-events-none absolute h-0 w-0" aria-hidden="true" focusable="false">
+            <defs>
+              <filter id="upload-sar-color-map" colorInterpolationFilters="sRGB">
+                <feColorMatrix type="saturate" values="1.8" />
+                <feComponentTransfer>
+                  <feFuncR type="table" tableValues="0.16 0.98" />
+                  <feFuncG type="table" tableValues="0.01 1" />
+                  <feFuncB type="table" tableValues="0.04 0.08" />
+                </feComponentTransfer>
+              </filter>
+            </defs>
+          </svg>
+        </div>
       ) : (
         <div className="flex h-20 w-32 items-center justify-center rounded-lg bg-stone-300/40 text-xs text-secondary dark:bg-black/20">Preparing preview...</div>
       )}
@@ -207,9 +231,12 @@ function ImageSlotCard({
         <span className="min-w-0 flex-1 truncate font-mono text-[10px] font-medium text-primary">{slot.file.name}</span>
         <button type="button" onClick={onRemove} className="shrink-0 rounded p-0.5 text-secondary transition hover:text-rose-500" title={`Remove image ${index + 1}`} aria-label={`Remove image ${index + 1}`}><X className="h-3.5 w-3.5" /></button>
       </div>
-      <select value={slot.modality} onChange={(event) => onModalityChange(event.target.value as Modality)} className="w-full appearance-none rounded-lg border border-stone-300/70 bg-white/70 px-2 py-1.5 text-[11px] font-medium text-primary shadow-sm outline-none transition focus:border-accent focus:ring-2 focus:ring-accent/20 dark:border-white/10 dark:bg-[#171512]" title="Image modality" aria-label={`Modality for ${slot.file.name}`}>
-        {MODALITY_OPTIONS.map((option) => <option key={option.value} value={option.value}>{option.label}</option>)}
-      </select>
+      <div className="relative w-full">
+        <Select items={MODALITY_OPTIONS} value={slot.modality} onValueChange={(value) => onModalityChange(value as Modality)}>
+          <SelectTrigger className="w-full"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectGroup><SelectLabel>Image modality</SelectLabel>{MODALITY_OPTIONS.map((option) => <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>)}</SelectGroup></SelectContent>
+        </Select>
+      </div>
       <label className="flex items-center gap-1.5 rounded-lg border border-stone-300/70 bg-white/70 px-2 py-1.5 text-[11px] text-secondary dark:border-white/10 dark:bg-[#171512]" title={`Date for ${slot.file.name}`}>
         <CalendarDays className="h-3.5 w-3.5 shrink-0 text-accent" />
         <span className="sr-only">Image date</span>

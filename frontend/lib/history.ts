@@ -164,3 +164,34 @@ export async function getRecentAnalyses(userId: string) {
     .limit(8);
   return { data: (result.data ?? []) as AnalysisHistoryItem[], error: result.error };
 }
+
+export async function getAnalysisByReportId(userId: string, reportId: string) {
+  if (!supabase) return { data: null as AnalysisHistoryItem | null, error: null };
+  const result = await supabase
+    .from("analysis_history")
+    .select("id, query, response, created_at")
+    .eq("user_id", userId)
+    .eq("response->report->>report_id", reportId)
+    .limit(1)
+    .maybeSingle();
+
+  if (result.data) return { data: result.data as AnalysisHistoryItem, error: result.error };
+
+  const chatResult = await supabase
+    .from("chat_history")
+    .select("id, response, created_at")
+    .eq("user_id", userId)
+    .eq("role", "assistant")
+    .eq("response->report->>report_id", reportId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const response = chatResult.data?.response as AnalyzeResponse | null | undefined;
+
+  return {
+    data: response && chatResult.data
+      ? { id: chatResult.data.id, query: response.query, response, created_at: chatResult.data.created_at }
+      : null,
+    error: result.error ?? chatResult.error,
+  };
+}

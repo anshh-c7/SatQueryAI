@@ -200,7 +200,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             <div className="flex flex-1 items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-accent" /></div>
           ) : (
             <div className={`grid min-h-0 flex-1 gap-5 ${workspaceTurn ? "lg:grid-cols-[minmax(0,1fr)_minmax(360px,0.9fr)]" : "mx-auto w-full max-w-3xl"}`}>
-              {workspaceTurn && <ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} />}
+              {workspaceTurn && <ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} data={workspaceTurn.response} />}
               <section className="flex min-h-0 min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 shadow-subtle dark:border-white/10 dark:bg-[#171512]/55">
                 <div className="min-h-0 flex-1 space-y-5 overflow-y-scroll overscroll-auto touch-pan-y [scrollbar-gutter:stable] pr-1">
                   {conversation.map((turn, index) => (

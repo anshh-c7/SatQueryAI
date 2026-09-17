@@ -3,12 +3,14 @@
 import { useState } from "react";
 import { Maximize2, X, Grid, Image as ImageIcon, Crosshair, BarChart3 } from "lucide-react";
 import type { SavedImagePreview } from "@/lib/history";
-import type { VisualEvidence } from "@/lib/types/analyze";
+import type { AnalyzeResponse, VisualEvidence } from "@/lib/types/analyze";
 import { clsx } from "clsx";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ImageWorkspaceProps {
   images: SavedImagePreview[];
   evidence?: VisualEvidence | null;
+  data?: AnalyzeResponse;
 }
 
 type ViewMode = "grid" | "img0" | "img1" | "evidence";
@@ -20,22 +22,53 @@ const PREVIEW_MODES: { value: PreviewMode; label: string; description: string }[
   { value: "multispectral", label: "Multispectral", description: "Interference view" },
 ];
 
-function EvidenceDataSummary({ evidence }: { evidence?: VisualEvidence | null }) {
+function WorkspaceTabButton({
+  mode,
+  label,
+  icon: Icon,
+  disabled = false,
+  activeMode,
+  onSelect,
+}: {
+  mode: ViewMode;
+  label: string;
+  icon: typeof Grid;
+  disabled?: boolean;
+  activeMode: ViewMode;
+  onSelect: (mode: ViewMode) => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={() => onSelect(mode)}
+      className={clsx(
+        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono transition-all duration-200",
+        activeMode === mode
+          ? "bg-[#1C1917] text-white shadow-sm dark:bg-white dark:text-black"
+          : "text-secondary hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed",
+      )}
+    >
+      <Icon className="w-3 h-3" />
+      <span>{label}</span>
+    </button>
+  );
+}
+
+function EvidenceDataSummary({ evidence, data }: { evidence?: VisualEvidence | null; data?: AnalyzeResponse }) {
   const regions = evidence?.regions ?? [];
   const changedPercent = Math.min(100, Math.max(0, (evidence?.changed_pixel_fraction ?? 0) * 100));
-
-  if (!evidence) return null;
 
   return (
     <section className="mt-4 space-y-3 rounded-xl border border-stone-200/80 bg-white/60 p-3 dark:border-white/10 dark:bg-[#1C1917]">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-4 w-4 text-accent" />
-          <h2 className="text-xs font-semibold text-primary">Evidence measurements</h2>
+          <h2 className="text-xs font-semibold text-primary">{evidence ? "Evidence measurements" : "Image inputs"}</h2>
         </div>
-        <span className="font-mono text-[10px] text-secondary">{changedPercent.toFixed(2)}% changed</span>
+        <span className="font-mono text-[10px] text-secondary">{evidence ? `${changedPercent.toFixed(2)}% changed` : `${data?.inputs.length ?? 0} source${data?.inputs.length === 1 ? "" : "s"}`}</span>
       </div>
-      {regions.length > 0 ? (
+      {evidence && regions.length > 0 ? (
         <>
           <div className="flex h-32 items-end gap-2 rounded-lg bg-stone-100/70 px-3 pb-3 pt-4 dark:bg-black/20">
             {regions.map((region, index) => {
@@ -58,14 +91,19 @@ function EvidenceDataSummary({ evidence }: { evidence?: VisualEvidence | null })
             </table>
           </div>
         </>
-      ) : (
-        <p className="rounded-lg border border-dashed border-stone-300/70 p-4 text-center text-xs text-secondary dark:border-white/10">No region measurements were returned for this analysis.</p>
+      ) : evidence ? <p className="rounded-lg border border-dashed border-stone-300/70 p-4 text-center text-xs text-secondary dark:border-white/10">No region measurements were returned for this analysis.</p> : (
+        <div className="overflow-x-auto rounded-lg border border-stone-200/70 dark:border-white/10">
+          <table className="w-full min-w-[28rem] text-left text-[10px]">
+            <thead className="bg-stone-100/80 font-mono text-secondary dark:bg-[#171512]"><tr><th className="px-2 py-1.5">File</th><th className="px-2 py-1.5">Modality</th><th className="px-2 py-1.5">Capture date</th></tr></thead>
+            <tbody className="divide-y divide-stone-200/70 dark:divide-white/10">{(data?.inputs ?? []).map((input) => <tr key={`${input.filename}-${input.timestamp}`}><td className="px-2 py-1.5 text-primary">{input.filename}</td><td className="px-2 py-1.5 font-mono uppercase text-accent">{input.modality}</td><td className="px-2 py-1.5 text-primary">{input.timestamp || "Not supplied"}</td></tr>)}</tbody>
+          </table>
+        </div>
       )}
     </section>
   );
 }
 
-export function ImageWorkspace({ images, evidence }: ImageWorkspaceProps) {
+export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) {
   const [fullscreen, setFullscreen] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [activeMode, setActiveMode] = useState<PreviewMode>("optical");
@@ -87,35 +125,8 @@ export function ImageWorkspace({ images, evidence }: ImageWorkspaceProps) {
     );
   }
 
-  const TabButton = ({
-    mode,
-    label,
-    icon: Icon,
-    disabled = false,
-  }: {
-    mode: ViewMode;
-    label: string;
-    icon: any;
-    disabled?: boolean;
-  }) => (
-    <button
-      type="button"
-      disabled={disabled}
-      onClick={() => setViewMode(mode)}
-      className={clsx(
-        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono transition-all duration-200",
-        viewMode === mode
-          ? "bg-[#1C1917] text-white shadow-sm dark:bg-white dark:text-black"
-          : "text-secondary hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed"
-      )}
-    >
-      <Icon className="w-3 h-3" />
-      <span>{label}</span>
-    </button>
-  );
-
   return (
-    <section className="flex min-h-0 h-full flex-col gap-3 rounded-2xl border border-stone-300/70 bg-white/45 p-3 shadow-subtle dark:border-white/10 dark:bg-[#171512]/70">
+    <section className="relative flex min-h-[620px] h-auto flex-col gap-3 rounded-2xl border border-stone-300/70 bg-white/45 p-3 shadow-subtle dark:border-white/10 dark:bg-[#171512]/70">
       <svg className="pointer-events-none absolute h-0 w-0" aria-hidden="true" focusable="false">
         <defs>
           <filter id="sar-color-map" colorInterpolationFilters="sRGB">
@@ -145,26 +156,28 @@ export function ImageWorkspace({ images, evidence }: ImageWorkspaceProps) {
 
         {/* Tabs */}
         <div className="flex items-center gap-1 bg-stone-200/50 dark:bg-black/20 p-1 rounded-xl w-fit">
-          <TabButton mode="grid" label="All" icon={Grid} />
+          <WorkspaceTabButton mode="grid" label="All" icon={Grid} activeMode={viewMode} onSelect={setViewMode} />
           {images.length > 0 && (
-            <TabButton mode="img0" label="Image 1" icon={ImageIcon} />
+            <WorkspaceTabButton mode="img0" label="Image 1" icon={ImageIcon} activeMode={viewMode} onSelect={setViewMode} />
           )}
           {images.length > 1 && (
-            <TabButton mode="img1" label="Image 2" icon={ImageIcon} />
+            <WorkspaceTabButton mode="img1" label="Image 2" icon={ImageIcon} activeMode={viewMode} onSelect={setViewMode} />
           )}
-          <TabButton
+          <WorkspaceTabButton
             mode="evidence"
             label="Evidence"
             icon={Crosshair}
             disabled={!overlay}
+            activeMode={viewMode}
+            onSelect={setViewMode}
           />
         </div>
-        <label className="flex w-fit items-center gap-2 rounded-lg border border-stone-300/70 bg-white/65 px-2.5 py-1.5 text-[11px] text-secondary shadow-sm dark:border-white/10 dark:bg-[#171512]">
-          <span className="font-mono uppercase tracking-wide">Preview mode</span>
-          <select value={activeMode} onChange={(event) => setActiveMode(event.target.value as PreviewMode)} className="cursor-pointer bg-transparent font-semibold text-primary outline-none" aria-label="Image preview mode">
-            {PREVIEW_MODES.map((mode) => <option key={mode.value} value={mode.value}>{mode.label} - {mode.description}</option>)}
-          </select>
-        </label>
+        <div className="relative w-fit">
+          <Select items={PREVIEW_MODES.map((mode) => ({ label: mode.label, value: mode.value }))} value={activeMode} onValueChange={(value) => setActiveMode(value as PreviewMode)}>
+            <SelectTrigger className="min-w-48"><SelectValue /></SelectTrigger>
+            <SelectContent><SelectGroup><SelectLabel>Preview mode</SelectLabel>{PREVIEW_MODES.map((mode) => <SelectItem key={mode.value} value={mode.value}>{mode.label} - {mode.description}</SelectItem>)}</SelectGroup></SelectContent>
+          </Select>
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto pr-1">
@@ -262,7 +275,7 @@ export function ImageWorkspace({ images, evidence }: ImageWorkspaceProps) {
           </figure>
         )}
 
-        <EvidenceDataSummary evidence={evidence} />
+        <EvidenceDataSummary evidence={evidence} data={data} />
       </div>
 
       {fullscreen && (
