@@ -54,7 +54,7 @@ export function SelectValue({ placeholder = "Select an option" }: { placeholder?
 export function SelectContent({ children }: { children: ReactNode }) {
   const { open } = useSelect();
   if (!open) return null;
-  return <div className="absolute left-0 top-[calc(100%+0.35rem)] z-50 min-w-full overflow-hidden rounded-xl border border-stone-300/80 bg-[#FAF6F0] p-1.5 shadow-xl dark:border-white/10 dark:bg-[#1C1917]" role="listbox">{children}</div>;
+  return <div className="select-menu-swish absolute left-0 top-[calc(100%+0.35rem)] z-50 min-w-full overflow-hidden rounded-xl border border-stone-300/80 bg-[#FAF6F0] p-1.5 shadow-xl dark:border-white/10 dark:bg-[#1C1917]" role="listbox">{children}</div>;
 }
 
 export function SelectGroup({ children }: { children: ReactNode }) {

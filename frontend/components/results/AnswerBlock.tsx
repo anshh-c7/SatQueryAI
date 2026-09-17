@@ -190,8 +190,8 @@ export const AnswerBlock: React.FC<AnswerBlockProps> = ({
             <ReactMarkdown
               remarkPlugins={[remarkGfm]}
               components={{
-                h1: ({ children }) => <h3 className="mt-4 text-lg font-semibold first:mt-0">{children}</h3>,
-                h2: ({ children }) => <h3 className="mt-4 text-base font-semibold first:mt-0">{children}</h3>,
+                h1: ({ children }) => <h3 className="mt-3 text-base font-semibold first:mt-0">{children}</h3>,
+                h2: ({ children }) => <h3 className="mt-3 text-sm font-semibold first:mt-0">{children}</h3>,
                 h3: ({ children }) => <h4 className="mt-3 text-sm font-semibold first:mt-0">{children}</h4>,
                 p: ({ children }) => <p className="leading-relaxed">{children}</p>,
                 ul: ({ children }) => <ul className="list-disc space-y-1 pl-5">{children}</ul>,

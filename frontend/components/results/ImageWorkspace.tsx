@@ -43,7 +43,7 @@ function WorkspaceTabButton({
       disabled={disabled}
       onClick={() => onSelect(mode)}
       className={clsx(
-        "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-[11px] font-mono transition-all duration-200",
+        "flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[10px] font-mono transition-all duration-200",
         activeMode === mode
           ? "bg-[#1C1917] text-white shadow-sm dark:bg-white dark:text-black"
           : "text-secondary hover:bg-black/5 dark:hover:bg-white/5 disabled:opacity-30 disabled:cursor-not-allowed",
@@ -190,7 +190,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
                 className="group relative overflow-hidden rounded-xl border border-stone-200 bg-black/5 dark:border-white/10 dark:bg-black/20"
               >
                 <div className="relative">
-                  <img src={image.data_url} alt={image.filename} className="h-48 w-full object-cover transition-all duration-300 ease-in-out group-hover:scale-105 sm:h-56" style={{ filter: imageFilter }} />
+                  <img src={image.data_url} alt={image.filename} className="block max-h-56 w-full object-contain transition-all duration-300 ease-in-out group-hover:scale-[1.02] sm:max-h-64" style={{ filter: imageFilter }} />
                   {activeMode === "multispectral" && <div className="multispectral-overlay absolute inset-0" aria-hidden="true" />}
                 </div>
                 <button
@@ -211,7 +211,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
                 <img
                   src={overlay}
                   alt="Boundary evidence"
-                  className="aspect-square w-full object-cover"
+                  className="block max-h-56 w-full object-contain"
                 />
                 <button
                   type="button"
@@ -299,7 +299,9 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
               src={fullscreen}
               alt="Fullscreen view"
               className="max-h-full max-w-full object-contain shadow-2xl rounded-lg animate-in zoom-in-95 duration-300"
+              style={{ filter: imageFilter }}
             />
+            {activeMode === "multispectral" && <div className="multispectral-overlay pointer-events-none absolute inset-0" aria-hidden="true" />}
           </div>
         </div>
       )}

@@ -200,9 +200,9 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
             <div className="flex flex-1 items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-accent" /></div>
           ) : (
             <div className={`grid w-full items-start gap-5 ${workspaceTurn ? "lg:grid-cols-2" : "mx-auto w-full max-w-3xl"}`}>
-              {workspaceTurn && <ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} data={workspaceTurn.response} />}
-              <section className="flex min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 shadow-subtle dark:border-white/10 dark:bg-[#171512]/55">
-                <div className="space-y-4 pr-1">
+              {workspaceTurn && <div className="lg:sticky lg:top-4"><ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} data={workspaceTurn.response} /></div>}
+              <section className="flex min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
+                <div className="space-y-5 pr-2">
                   {conversation.map((turn, index) => (
                     <article key={`${turn.query}-${index}`} className="space-y-3">
                       <Bubble align="end"><BubbleContent>{turn.query}</BubbleContent></Bubble>
