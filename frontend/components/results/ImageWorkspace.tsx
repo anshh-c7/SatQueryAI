@@ -126,7 +126,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
   }
 
   return (
-    <section className="relative flex min-h-[620px] h-auto flex-col gap-3 rounded-2xl border border-stone-300/70 bg-white/45 p-3 shadow-subtle dark:border-white/10 dark:bg-[#171512]/70">
+    <section className="relative flex h-auto min-h-0 flex-col gap-3 rounded-2xl border border-stone-300/70 bg-white/45 p-3 shadow-subtle dark:border-white/10 dark:bg-[#171512]/70">
       <svg className="pointer-events-none absolute h-0 w-0" aria-hidden="true" focusable="false">
         <defs>
           <filter id="sar-color-map" colorInterpolationFilters="sRGB">
@@ -180,7 +180,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1">
+      <div className="pr-1">
         {/* Grid View */}
         {viewMode === "grid" && (
           <div className={clsx("grid gap-3", images.length + (overlay ? 1 : 0) > 1 ? "grid-cols-1 sm:grid-cols-2" : "grid-cols-1")}>
@@ -190,7 +190,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
                 className="group relative overflow-hidden rounded-xl border border-stone-200 bg-black/5 dark:border-white/10 dark:bg-black/20"
               >
                 <div className="relative">
-                  <img src={image.data_url} alt={image.filename} className="aspect-square w-full object-cover transition-all duration-300 ease-in-out group-hover:scale-105" style={{ filter: imageFilter }} />
+                  <img src={image.data_url} alt={image.filename} className="h-48 w-full object-cover transition-all duration-300 ease-in-out group-hover:scale-105 sm:h-56" style={{ filter: imageFilter }} />
                   {activeMode === "multispectral" && <div className="multispectral-overlay absolute inset-0" aria-hidden="true" />}
                 </div>
                 <button
@@ -233,7 +233,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
           <figure className="relative h-full flex flex-col rounded-xl overflow-hidden border border-stone-200 dark:border-white/10 bg-black/5">
             <img
               src={images[0].data_url}
-              className="flex-1 w-full object-contain bg-black/20 transition-all duration-300 ease-in-out"
+              className="h-64 w-full object-contain bg-black/20 transition-all duration-300 ease-in-out"
               style={{ filter: imageFilter }}
               alt={images[0].filename}
             />
@@ -249,7 +249,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
           <figure className="relative h-full flex flex-col rounded-xl overflow-hidden border border-stone-200 dark:border-white/10 bg-black/5">
             <img
               src={images[1].data_url}
-              className="flex-1 w-full object-contain bg-black/20 transition-all duration-300 ease-in-out"
+              className="h-64 w-full object-contain bg-black/20 transition-all duration-300 ease-in-out"
               style={{ filter: imageFilter }}
               alt={images[1].filename}
             />
