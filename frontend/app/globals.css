@@ -259,13 +259,8 @@
 
   .multispectral-overlay {
     pointer-events: none;
+    background-color: rgba(213, 32, 177, 0.42);
     mix-blend-mode: color;
-    background:
-      repeating-radial-gradient(ellipse at 42% 48%, rgba(0, 235, 255, 0.86) 0 3%, rgba(31, 55, 211, 0.84) 5% 8%, rgba(255, 0, 191, 0.86) 10% 13%, rgba(255, 224, 0, 0.82) 15% 18%, rgba(72, 255, 99, 0.82) 20% 23%, rgba(255, 38, 119, 0.84) 25% 28%, rgba(0, 202, 255, 0.84) 30% 33%),
-      repeating-radial-gradient(ellipse at 68% 64%, rgba(255, 0, 190, 0.62) 0 4%, transparent 6% 12%, rgba(0, 232, 255, 0.66) 14% 18%, transparent 20% 27%, rgba(255, 221, 0, 0.58) 29% 33%, transparent 35% 43%),
-      linear-gradient(135deg, rgba(255, 0, 169, 0.42), rgba(0, 223, 255, 0.38) 42%, rgba(255, 221, 0, 0.36) 70%, rgba(68, 255, 96, 0.4));
-    background-blend-mode: screen, screen, color;
-    opacity: 0.72;
   }
 
   .select-menu-swish {
