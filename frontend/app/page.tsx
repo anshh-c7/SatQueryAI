@@ -213,7 +213,7 @@ export default function HomePage() {
       </header>}
 
       {/* Main Content */}
-      <main className={`relative z-10 flex min-h-[calc(100vh-100px)] flex-col px-4 py-6 transition-[margin] duration-300 ease-apple ${sidebarCollapsed ? "lg:ml-0" : "lg:ml-72"} ${conversation.length > 0 ? "" : "items-center justify-center"}`}>
+      <main className={`relative z-10 flex min-h-[calc(100vh-100px)] flex-col px-4 py-6 transition-[margin] duration-300 ease-apple ${sidebarCollapsed ? "lg:ml-0" : "lg:ml-72"} ${conversation.length > 0 ? "lg:h-[calc(100vh-100px)] lg:overflow-hidden" : "items-center justify-center"}`}>
         {!result && (
           <>
             <FrontierHero onSelectSuggestion={handleSelectSuggestion} />
@@ -240,7 +240,7 @@ export default function HomePage() {
         )}
 
         {conversation.length > 0 && (
-          <div className="mx-auto flex w-full max-w-[1440px] flex-col">
+          <div className="mx-auto flex h-full w-full max-w-[1440px] min-h-0 flex-col">
             <div className="mb-3 flex items-center justify-between gap-3">
               <div>
                 <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-secondary">Conversation</p>
@@ -248,10 +248,10 @@ export default function HomePage() {
               </div>
               <button type="button" onClick={handleNewAnalysis} className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-stone-300/70 px-3 py-1.5 text-xs text-secondary transition hover:text-primary dark:border-white/10"><ArrowLeft className="h-3.5 w-3.5" /> New Query</button>
             </div>
-            <div className={`grid w-full items-start gap-5 ${workspaceTurn ? "lg:grid-cols-2" : "max-w-3xl mx-auto"}`}>
+            <div className={`grid min-h-0 w-full flex-1 items-start gap-5 ${workspaceTurn ? "lg:grid-cols-2" : "max-w-3xl mx-auto"}`}>
               {workspaceTurn && <div className="lg:sticky lg:top-4"><ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} data={workspaceTurn.response} /></div>}
-              <section className="flex min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
-                <div className="space-y-5 pr-2">
+              <section className="flex min-h-0 min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55">
+                <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-2">
                   {conversation.map((turn, index) => <article key={`${turn.query}-${index}`} className="space-y-3"><Bubble align="end"><BubbleContent>{turn.query}</BubbleContent></Bubble><ResultsPanel data={turn.response} imagePreviews={turn.imagePreviews} showImages={false} dense conversation={conversation.map((item) => ({ query: item.query, response: item.response, imagePreviews: item.imagePreviews }))} /></article>)}
                 </div>
                 <div className="shrink-0 border-t border-stone-300/50 pt-3 dark:border-white/10"><FrontierPromptBox value={prompt} onChange={setPrompt} onSubmitPrompt={handleSubmitForm} isSubmitting={isSubmitting} compact /></div>

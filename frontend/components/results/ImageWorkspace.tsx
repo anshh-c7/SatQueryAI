@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Maximize2, X, Grid, Image as ImageIcon, Crosshair, BarChart3 } from "lucide-react";
+import { Maximize2, X, Grid, Image as ImageIcon, Crosshair, BarChart3, ZoomIn, ZoomOut } from "lucide-react";
 import type { SavedImagePreview } from "@/lib/history";
 import type { AnalyzeResponse, VisualEvidence } from "@/lib/types/analyze";
 import { clsx } from "clsx";
@@ -105,6 +105,7 @@ function EvidenceDataSummary({ evidence, data }: { evidence?: VisualEvidence | n
 
 export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) {
   const [fullscreen, setFullscreen] = useState<string | null>(null);
+  const [fullscreenZoom, setFullscreenZoom] = useState(1);
   const [viewMode, setViewMode] = useState<ViewMode>("grid");
   const [activeMode, setActiveMode] = useState<PreviewMode>("optical");
 
@@ -116,6 +117,16 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
     : activeMode === "multispectral"
       ? "contrast(2.5) brightness(0.55) saturate(1.5)"
       : "none";
+
+  const openFullscreen = (image: string) => {
+    setFullscreen(image);
+    setFullscreenZoom(1);
+  };
+
+  const closeFullscreen = () => {
+    setFullscreen(null);
+    setFullscreenZoom(1);
+  };
 
   if (images.length === 0 && !overlay) {
     return (
@@ -195,7 +206,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
                 </div>
                 <button
                   type="button"
-                  onClick={() => setFullscreen(image.data_url)}
+                  onClick={() => openFullscreen(image.data_url)}
                   className="absolute right-2 top-2 rounded-md bg-black/60 p-1.5 text-white opacity-0 transition group-hover:opacity-100 backdrop-blur-md"
                 >
                   <Maximize2 className="h-4 w-4" />
@@ -215,7 +226,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
                 />
                 <button
                   type="button"
-                  onClick={() => setFullscreen(overlay)}
+                  onClick={() => openFullscreen(overlay)}
                   className="absolute right-2 top-2 rounded-md bg-accent/80 p-1.5 text-white backdrop-blur-md"
                 >
                   <Maximize2 className="h-4 w-4" />
@@ -240,7 +251,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
             {activeMode === "multispectral" && <div className="multispectral-overlay pointer-events-none absolute inset-0" aria-hidden="true" />}
             <div className="bg-white/90 dark:bg-[#1F1B17] px-4 py-3 border-t border-stone-200 dark:border-white/10 flex justify-between items-center">
               <span className="text-xs font-mono text-secondary">{images[0].filename}</span>
-              <button onClick={() => setFullscreen(images[0].data_url)} className="text-accent hover:text-accent/80 transition-colors"><Maximize2 className="w-4 h-4"/></button>
+              <button onClick={() => openFullscreen(images[0].data_url)} className="text-accent hover:text-accent/80 transition-colors"><Maximize2 className="w-4 h-4"/></button>
             </div>
           </figure>
         )}
@@ -256,7 +267,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
             {activeMode === "multispectral" && <div className="multispectral-overlay pointer-events-none absolute inset-0" aria-hidden="true" />}
             <div className="bg-white/90 dark:bg-[#1F1B17] px-4 py-3 border-t border-stone-200 dark:border-white/10 flex justify-between items-center">
               <span className="text-xs font-mono text-secondary">{images[1].filename}</span>
-              <button onClick={() => setFullscreen(images[1].data_url)} className="text-accent hover:text-accent/80 transition-colors"><Maximize2 className="w-4 h-4"/></button>
+              <button onClick={() => openFullscreen(images[1].data_url)} className="text-accent hover:text-accent/80 transition-colors"><Maximize2 className="w-4 h-4"/></button>
             </div>
           </figure>
         )}
@@ -270,7 +281,7 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
             />
             <div className="bg-accent px-4 py-3 flex justify-between items-center text-white">
               <span className="text-xs font-mono font-medium">RADIOMETRIC_DIFFERENCE_MAP</span>
-              <button onClick={() => setFullscreen(overlay)} className="hover:scale-110 transition-transform"><Maximize2 className="w-4 h-4"/></button>
+              <button onClick={() => openFullscreen(overlay)} className="hover:scale-110 transition-transform"><Maximize2 className="w-4 h-4"/></button>
             </div>
           </figure>
         )}
@@ -281,27 +292,50 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
       {fullscreen && (
         <div
           className="fixed inset-0 z-[1000] flex items-center justify-center bg-black/95 backdrop-blur-sm p-4 sm:p-10 transition-all duration-300 animate-in fade-in"
-          onClick={() => setFullscreen(null)}
+          onClick={closeFullscreen}
         >
+          <div className="absolute left-1/2 top-6 z-[1001] flex -translate-x-1/2 items-center gap-1 rounded-xl border border-white/15 bg-white/10 p-1.5 text-white shadow-xl backdrop-blur-md" role="toolbar" aria-label="Image zoom controls">
+            <button
+              type="button"
+              onClick={(event) => { event.stopPropagation(); setFullscreenZoom((zoom) => Math.max(0.75, Number((zoom - 0.25).toFixed(2)))); }}
+              disabled={fullscreenZoom <= 0.75}
+              className="rounded-lg p-2 transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35"
+              aria-label="Zoom out"
+              title="Zoom out"
+            >
+              <ZoomOut className="h-4 w-4" />
+            </button>
+            <span className="min-w-12 text-center font-mono text-[10px] text-white/80">{Math.round(fullscreenZoom * 100)}%</span>
+            <button
+              type="button"
+              onClick={(event) => { event.stopPropagation(); setFullscreenZoom((zoom) => Math.min(3, Number((zoom + 0.25).toFixed(2)))); }}
+              disabled={fullscreenZoom >= 3}
+              className="rounded-lg p-2 transition hover:bg-white/15 disabled:cursor-not-allowed disabled:opacity-35"
+              aria-label="Zoom in"
+              title="Zoom in"
+            >
+              <ZoomIn className="h-4 w-4" />
+            </button>
+          </div>
           <button
             type="button"
             className="absolute right-6 top-6 z-[1001] rounded-full bg-white/10 p-3 text-white hover:bg-white/20 transition-colors border border-white/10"
             onClick={(e) => {
               e.stopPropagation();
-              setFullscreen(null);
+              closeFullscreen();
             }}
             aria-label="Close image"
           >
             <X className="h-6 w-6" />
           </button>
-          <div className="relative h-full w-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
+          <div className="relative flex h-full w-full items-center justify-center overflow-hidden" onClick={(e) => e.stopPropagation()}>
             <img
               src={fullscreen}
               alt="Fullscreen view"
               className="max-h-full max-w-full object-contain shadow-2xl rounded-lg animate-in zoom-in-95 duration-300"
-              style={{ filter: imageFilter }}
+              style={{ filter: imageFilter, transform: `scale(${fullscreenZoom})`, transition: "transform 220ms ease-out" }}
             />
-            {activeMode === "multispectral" && <div className="multispectral-overlay pointer-events-none absolute inset-0" aria-hidden="true" />}
+            {activeMode === "multispectral" && <div className="multispectral-overlay pointer-events-none absolute inset-0" style={{ transform: `scale(${fullscreenZoom})`, transition: "transform 220ms ease-out" }} aria-hidden="true" />}
           </div>
         </div>
       )}

@@ -186,8 +186,8 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         </header>
       )}
 
-      <main className={`relative z-10 flex min-h-[calc(100vh-2rem)] flex-col px-4 py-6 transition-[margin] duration-300 ease-apple ${sidebarCollapsed ? "lg:ml-0" : "lg:ml-72"}`}>
-        <div className="mx-auto flex w-full max-w-[1440px] flex-col">
+      <main className={`relative z-10 flex min-h-[calc(100vh-2rem)] flex-col px-4 py-6 transition-[margin] duration-300 ease-apple ${sidebarCollapsed ? "lg:ml-0" : "lg:ml-72"} lg:h-[calc(100vh-2rem)] lg:overflow-hidden`}>
+        <div className="mx-auto flex h-full w-full max-w-[1440px] min-h-0 flex-col">
           <div className="mb-4 flex items-center justify-between px-1">
             <div>
               <p className="text-[10px] font-mono uppercase tracking-[0.18em] text-secondary">Conversation</p>
@@ -199,10 +199,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           {isLoadingConversation ? (
             <div className="flex flex-1 items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-accent" /></div>
           ) : (
-            <div className={`grid w-full items-start gap-5 ${workspaceTurn ? "lg:grid-cols-2" : "mx-auto w-full max-w-3xl"}`}>
+            <div className={`grid min-h-0 w-full flex-1 items-start gap-5 ${workspaceTurn ? "lg:grid-cols-2" : "mx-auto w-full max-w-3xl"}`}>
               {workspaceTurn && <div className="lg:sticky lg:top-4"><ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} data={workspaceTurn.response} /></div>}
-              <section className="flex min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55 lg:max-h-[calc(100vh-8rem)] lg:overflow-y-auto">
-                <div className="space-y-5 pr-2">
+              <section className="flex min-h-0 min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55">
+                <div className="min-h-0 flex-1 space-y-5 overflow-y-auto pr-2">
                   {conversation.map((turn, index) => (
                     <article key={`${turn.query}-${index}`} className="space-y-3">
                       <Bubble align="end"><BubbleContent>{turn.query}</BubbleContent></Bubble>
