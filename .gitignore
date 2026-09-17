@@ -1,0 +1,123 @@
+# ==========================================================
+# SatQuery AI - .gitignore
+# ==========================================================
+
+# --- Node / Frontend Dependencies & Builds ---
+node_modules/
+**/node_modules/
+/.pnp
+.pnp.js
+.yarn/install-state.gz
+
+# Next.js Build Output & Cache
+.next/
+**/.next/
+out/
+build/
+dist/
+.turbo/
+**/.turbo/
+
+# Production & Packaging
+*.tsbuildinfo
+next-env.d.ts.bak
+
+# --- Python Environments & Caches ---
+.venv/
+**/.venv/
+venv/
+**/venv/
+env/
+**/env/
+ENV/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+**/.pytest_cache/
+.ipynb_checkpoints/
+**/.ipynb_checkpoints/
+
+# --- Debugging, Logs & Reports ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+*.log
+**/*.log
+backend/server.log
+logs/
+
+# Testing & Coverage
+coverage/
+**/coverage/
+.nyc_output/
+.coverage
+htmlcov/
+
+# --- Local Environment Variables (.env) ---
+.env*.local
+.env
+.env.example
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- Operating System & Temporary Files ---
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+[Dd]esktop.ini
+
+# Temporary / Scratch directories
+tmp/
+/tmp
+.temp/
+/.temp
+scratch/
+/scratch
+
+# --- IDE & Editor Configurations ---
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.idea/
+.cursor/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.bak
+
+# --- Large Geospatial Rasters & Binary Uploads ---
+# Exclude raw GeoTIFF / COG / NetCDF / Archives from accidental commits (>100MB)
+*.tif
+*.tiff
+*.cog
+*.geotiff
+*.nc
+*.h5
+*.hdf5
+*.zip
+*.tar.gz
+
+# --- Model Weights & Trained Adapters ---
+# Trained weights are ~157MB each, distributed via Kaggle/GitHub releases, not Git
+backend/artifacts/**/adapter_model.safetensors
+backend/artifacts/**/adapter_model.bin
+backend/artifacts/**/*.zip
+backend/artifacts/**/*.pt
+artifacts/adapter_a/*.safetensors
+artifacts/adapter_b/*.safetensors
+artifacts/adapter_*/*.json
+artifacts/adapter_*/*.jinja
+artifacts/adapter_*/tokenizer*
+!artifacts/adapter_*/PUT_ADAPTER_HERE.txt
+*.safetensors
