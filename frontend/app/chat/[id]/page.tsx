@@ -211,7 +211,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                   ))}
                   {refusal && <p className="rounded-xl border border-rose-300/40 bg-rose-500/10 p-3 text-sm text-rose-700 dark:text-rose-300">{refusal}</p>}
                 </div>
-                <div className="shrink-0 border-t border-stone-300/50 pt-3 dark:border-white/10">
+                <div className="shrink-0 pt-3">
                   <FrontierPromptBox value={prompt} onChange={setPrompt} onSubmitPrompt={handleSubmitForm} isSubmitting={isSubmitting} compact />
                 </div>
               </section>

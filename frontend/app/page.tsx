@@ -254,7 +254,7 @@ export default function HomePage() {
                 <div className="space-y-5 pr-2 pb-2">
                   {conversation.map((turn, index) => <article key={`${turn.query}-${index}`} className="space-y-3"><Bubble align="end"><BubbleContent>{turn.query}</BubbleContent></Bubble><ResultsPanel data={turn.response} imagePreviews={turn.imagePreviews} showImages={false} dense conversation={conversation.map((item) => ({ query: item.query, response: item.response, imagePreviews: item.imagePreviews }))} /></article>)}
                 </div>
-                <div className="shrink-0 border-t border-stone-300/50 pt-3 dark:border-white/10"><FrontierPromptBox value={prompt} onChange={setPrompt} onSubmitPrompt={handleSubmitForm} isSubmitting={isSubmitting} compact /></div>
+                <div className="shrink-0 pt-3"><FrontierPromptBox value={prompt} onChange={setPrompt} onSubmitPrompt={handleSubmitForm} isSubmitting={isSubmitting} compact /></div>
               </section>
             </div>
           </div>
