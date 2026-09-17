@@ -213,7 +213,7 @@ export default function HomePage() {
       </header>}
 
       {/* Main Content */}
-      <main className={`relative z-10 flex min-h-[calc(100vh-100px)] flex-col px-4 py-6 transition-[margin] duration-300 ease-apple ${sidebarCollapsed ? "lg:ml-0" : "lg:ml-72"} ${conversation.length > 0 ? "lg:h-[calc(100vh-100px)] lg:overflow-hidden" : "items-center justify-center"}`}>
+      <main className={`relative z-10 flex min-h-[calc(100vh-100px)] flex-col px-4 py-6 ${conversation.length > 0 ? "lg:h-[calc(100vh-100px)] lg:overflow-hidden" : "items-center justify-center"}`}>
         {!result && (
           <>
             <FrontierHero onSelectSuggestion={handleSelectSuggestion} />

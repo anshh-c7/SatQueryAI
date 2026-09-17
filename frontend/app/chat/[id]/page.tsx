@@ -174,6 +174,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         refreshKey={historyRefreshKey}
         onNewChat={() => router.push("/")}
         onCollapsedChange={setSidebarCollapsed}
+        initialCollapsed
       />
       <div className="fixed inset-0 pointer-events-none bg-gradient-to-br from-[#FAF6F0]/85 via-[#F3E5D0]/80 to-[#EADCC9]/85 backdrop-blur-[24px] dark:hidden" />
       {sidebarCollapsed && (
@@ -186,7 +187,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
         </header>
       )}
 
-      <main className={`relative z-10 flex min-h-[calc(100vh-2rem)] flex-col px-4 py-6 transition-[margin] duration-300 ease-apple ${sidebarCollapsed ? "lg:ml-0" : "lg:ml-72"} lg:h-[calc(100vh-2rem)] lg:overflow-hidden`}>
+      <main className="relative z-10 flex min-h-[calc(100vh-2rem)] flex-col px-4 py-6 lg:h-[calc(100vh-2rem)] lg:overflow-hidden">
         <div className="mx-auto flex h-full w-full max-w-[1440px] min-h-0 flex-col">
           <div className="mb-4 flex items-center justify-between px-1">
             <div>
