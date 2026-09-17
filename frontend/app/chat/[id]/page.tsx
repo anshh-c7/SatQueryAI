@@ -199,10 +199,10 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
           {isLoadingConversation ? (
             <div className="flex flex-1 items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-accent" /></div>
           ) : (
-            <div className={`grid min-h-0 w-full flex-1 items-center gap-5 ${workspaceTurn ? "lg:grid-cols-2" : "mx-auto w-full max-w-3xl"}`}>
-              {workspaceTurn && <div className="lg:flex lg:h-[calc(100vh-9rem)] lg:items-center lg:overflow-y-auto"><ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} data={workspaceTurn.response} /></div>}
-              <section className="flex min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55 lg:h-[calc(100vh-9rem)] lg:overflow-y-auto">
-                <div className="space-y-5 pr-2">
+            <div className={`grid min-h-0 w-full flex-1 items-stretch gap-5 ${workspaceTurn ? "lg:grid-cols-2" : "mx-auto w-full max-w-3xl"}`}>
+              {workspaceTurn && <div className="box-border min-h-0 lg:flex lg:h-[calc(100vh-9rem)] lg:items-start lg:overflow-y-auto lg:pb-5"><ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} data={workspaceTurn.response} /></div>}
+              <section className="box-border flex min-h-0 min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 pb-5 text-xs shadow-subtle dark:border-white/10 dark:bg-[#171512]/55 lg:h-[calc(100vh-9rem)] lg:overflow-y-auto">
+                <div className="space-y-5 pr-2 pb-2">
                   {conversation.map((turn, index) => (
                     <article key={`${turn.query}-${index}`} className="space-y-3">
                       <Bubble align="end"><BubbleContent>{turn.query}</BubbleContent></Bubble>
