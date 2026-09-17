@@ -9,6 +9,7 @@ import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { MultiStepLoader } from "@/components/ui/multi-step-loader";
 import { SideNavbar } from "@/components/layout/SideNavbar";
 import { ImageWorkspace } from "@/components/results/ImageWorkspace";
+import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { postAnalyze } from "@/lib/api/analyzeClient";
 import { saveAnalysis, saveChatMessage } from "@/lib/history";
@@ -251,7 +252,7 @@ export default function HomePage() {
               {workspaceTurn && <ImageWorkspace images={workspaceTurn.imagePreviews} evidence={workspaceTurn.response.visual_evidence} />}
               <section className="flex min-h-0 min-w-0 flex-col rounded-2xl border border-stone-300/70 bg-white/35 p-3 shadow-subtle dark:border-white/10 dark:bg-[#171512]/55">
                 <div className="min-h-0 flex-1 space-y-5 overflow-y-scroll overscroll-auto touch-pan-y [scrollbar-gutter:stable] pr-1">
-                  {conversation.map((turn, index) => <article key={`${turn.query}-${index}`} className="space-y-3"><div className="ml-auto max-w-[90%] rounded-2xl rounded-br-md bg-[#1C1917] px-4 py-3 text-sm text-white shadow-subtle">{turn.query}</div><ResultsPanel data={turn.response} imagePreviews={turn.imagePreviews} showImages={false} dense conversation={conversation.map((item) => ({ query: item.query, response: item.response, imagePreviews: item.imagePreviews }))} /></article>)}
+                  {conversation.map((turn, index) => <article key={`${turn.query}-${index}`} className="space-y-3"><Bubble align="end"><BubbleContent>{turn.query}</BubbleContent></Bubble><ResultsPanel data={turn.response} imagePreviews={turn.imagePreviews} showImages={false} dense conversation={conversation.map((item) => ({ query: item.query, response: item.response, imagePreviews: item.imagePreviews }))} /></article>)}
                 </div>
                 <div className="shrink-0 border-t border-stone-300/50 pt-3 dark:border-white/10"><FrontierPromptBox value={prompt} onChange={setPrompt} onSubmitPrompt={handleSubmitForm} isSubmitting={isSubmitting} compact /></div>
               </section>

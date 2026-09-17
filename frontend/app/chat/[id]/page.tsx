@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { ArrowLeft, Globe, Loader2 } from "lucide-react";
 import { FrontierPromptBox } from "@/components/home/FrontierPromptBox";
 import { ImageWorkspace } from "@/components/results/ImageWorkspace";
+import { Bubble, BubbleContent } from "@/components/ui/bubble";
 import { ResultsPanel } from "@/components/results/ResultsPanel";
 import { SideNavbar } from "@/components/layout/SideNavbar";
 import { useAuth } from "@/components/auth/AuthProvider";
@@ -204,7 +205,7 @@ export default function ChatPage({ params }: { params: Promise<{ id: string }> }
                 <div className="min-h-0 flex-1 space-y-5 overflow-y-scroll overscroll-auto touch-pan-y [scrollbar-gutter:stable] pr-1">
                   {conversation.map((turn, index) => (
                     <article key={`${turn.query}-${index}`} className="space-y-3">
-                      <div className="ml-auto max-w-[90%] rounded-2xl rounded-br-md bg-[#1C1917] px-4 py-3 text-sm text-white shadow-subtle">{turn.query}</div>
+                      <Bubble align="end"><BubbleContent>{turn.query}</BubbleContent></Bubble>
                       <ResultsPanel data={turn.response} imagePreviews={turn.imagePreviews} showImages={false} dense conversation={conversation.map((item) => ({ query: item.query, response: item.response, imagePreviews: item.imagePreviews }))} />
                     </article>
                   ))}

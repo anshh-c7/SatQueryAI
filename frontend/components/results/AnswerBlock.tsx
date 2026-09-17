@@ -4,6 +4,7 @@ import React from "react";
 import { Sparkles, Clock, CheckCircle2 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { Bubble, BubbleContent } from "@/components/ui/bubble";
 
 interface AnswerBlockProps {
   answer: string;
@@ -160,7 +161,8 @@ export const AnswerBlock: React.FC<AnswerBlockProps> = ({
   const tableOutput = structuredOutput ?? parsedAnswer;
 
   return (
-    <div className={`${compact ? "p-3 space-y-2" : "p-5 space-y-3"} rounded-2xl bg-white/70 dark:bg-[#171512] border border-stone-300/80 dark:border-white/10 shadow-sm`}>
+    <Bubble variant="muted">
+      <BubbleContent className={`${compact ? "space-y-2" : "space-y-3"}`}>
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-7 h-7 rounded-full bg-accent/10 text-accent flex items-center justify-center">
@@ -210,6 +212,7 @@ export const AnswerBlock: React.FC<AnswerBlockProps> = ({
           </div>
         ) : renderFormattedAnswer(answer)}
       </div>
-    </div>
+      </BubbleContent>
+    </Bubble>
   );
 };
