@@ -7,9 +7,11 @@ import { supabase } from "@/lib/supabase/client";
 interface AuthContextValue {
   user: User | null;
   session: Session | null;
+  isGuest: boolean;
   loading: boolean;
   configured: boolean;
   authMessage: string | null;
+  enterGuestMode: () => void;
   signOut: () => Promise<void>;
   deleteAccount: () => Promise<{ error: Error | null }>;
 }
@@ -18,8 +20,17 @@ const AuthContext = createContext<AuthContextValue | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [loading, setLoading] = useState(Boolean(supabase));
   const [authMessage, setAuthMessage] = useState<string | null>(null);
+
+  useEffect(() => {
+    try {
+      setIsGuest(localStorage.getItem("satquery_guest_mode") === "true");
+    } catch {
+      setIsGuest(false);
+    }
+  }, []);
 
   useEffect(() => {
     if (!supabase) return;
@@ -85,7 +96,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const signOut = async () => {
+    if (isGuest) {
+      setIsGuest(false);
+      try {
+        localStorage.removeItem("satquery_guest_mode");
+      } catch {
+        // Guest mode remains available for the current session if storage is unavailable.
+      }
+      return;
+    }
     if (supabase) await supabase.auth.signOut();
+  };
+
+  const enterGuestMode = () => {
+    setIsGuest(true);
+    try {
+      localStorage.setItem("satquery_guest_mode", "true");
+    } catch {
+      // The in-memory guest session is still usable when storage is unavailable.
+    }
   };
 
   const deleteAccount = async () => {
@@ -119,9 +148,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       value={{
         user: session?.user ?? null,
         session,
+        isGuest,
         loading,
         configured: Boolean(supabase),
         authMessage,
+        enterGuestMode,
         signOut,
         deleteAccount,
       }}

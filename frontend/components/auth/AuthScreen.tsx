@@ -4,8 +4,10 @@ import { FormEvent, useEffect, useState } from "react";
 import { AlertCircle, Eye, EyeOff, Globe, Loader2, Mail, Sun, X } from "lucide-react";
 import { supabase } from "@/lib/supabase/client";
 import { ThemeToggle } from "@/components/common/ThemeToggle";
+import { useAuth } from "@/components/auth/AuthProvider";
 
 export function AuthScreen({ configurationError, authMessage }: { configurationError?: string; authMessage?: string }) {
+  const { enterGuestMode } = useAuth();
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -119,6 +121,9 @@ export function AuthScreen({ configurationError, authMessage }: { configurationE
           {message && <div role="alert" className={`flex items-start gap-2 rounded-lg p-3 text-xs ${messageTone === "success" ? "bg-emerald-500/10 text-emerald-800 dark:text-emerald-200" : "bg-amber-500/10 text-amber-800 dark:text-amber-200"}`}><AlertCircle className="mt-0.5 h-4 w-4 shrink-0" /><span className="min-w-0 flex-1">{message}</span>{authMessageVisible && <button type="button" onClick={() => { setMessage(null); setAuthMessageVisible(false); }} className="rounded p-0.5 text-current/70 transition hover:bg-black/5 hover:text-current dark:hover:bg-white/10" aria-label="Dismiss account message" title="Dismiss message"><X className="h-3.5 w-3.5" /></button>}</div>}
           <button type="submit" disabled={submitting || Boolean(configurationError)} className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1C1917] px-4 py-3 text-sm font-medium text-white transition hover:bg-[#342D27] disabled:cursor-not-allowed disabled:opacity-50">{submitting && <Loader2 className="h-4 w-4 animate-spin" />}{submitting ? "Connecting..." : mode === "signin" ? "Sign in" : "Create account"}</button>
         </form>
+        <div className="mt-5 flex items-center gap-3 text-[10px] font-mono uppercase tracking-[0.14em] text-secondary"><span className="h-px flex-1 bg-stone-200 dark:bg-white/10" /><span>or</span><span className="h-px flex-1 bg-stone-200 dark:bg-white/10" /></div>
+        <button type="button" onClick={enterGuestMode} className="mt-4 flex w-full items-center justify-center rounded-lg border border-accent/40 bg-accent/10 px-4 py-2.5 text-xs font-medium text-accent transition hover:bg-accent/15 hover:shadow-sm">Continue as guest</button>
+        <p className="mt-2 text-center text-[10px] text-secondary">Guest analyses stay on this device and are not saved to an account.</p>
         {mode === "signin" && <button type="button" onClick={() => void resendConfirmation()} disabled={resending || !email.trim() || Boolean(configurationError)} className="mt-4 flex w-full items-center justify-center gap-2 text-xs text-secondary hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"><Mail className="h-3.5 w-3.5" />{resending ? "Sending confirmation..." : "Resend confirmation email"}</button>}
         <div className="mt-5 border-t border-stone-200 pt-5 text-center dark:border-white/10"><button type="button" onClick={switchMode} className="text-xs text-secondary hover:text-primary">{mode === "signin" ? "Need an account? Create one" : "Already have an account? Sign in"}</button></div>
       </section>

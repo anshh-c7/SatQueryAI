@@ -4,7 +4,9 @@ import { useAuth } from "@/components/auth/AuthProvider";
 import { AuthScreen } from "@/components/auth/AuthScreen";
 
 export function AuthGate({ children }: { children: React.ReactNode }) {
-  const { user, loading, configured, authMessage } = useAuth();
+  const { user, isGuest, loading, configured, authMessage } = useAuth();
+
+  if (isGuest) return <>{children}</>;
 
   if (!configured) {
     return (
