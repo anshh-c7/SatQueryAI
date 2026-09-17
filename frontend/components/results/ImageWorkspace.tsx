@@ -115,8 +115,8 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
   const imageFilter = activeMode === "sar"
     ? "contrast(1.6) brightness(1.1) saturate(1.8) url(#sar-color-map)"
     : activeMode === "multispectral"
-      ? "contrast(2.5) brightness(0.55) saturate(1.5)"
-      : "none";
+      ? "contrast(2.1) brightness(0.72) saturate(1.9) url(#multispectral-color-map)"
+      : "contrast(1.15) saturate(1.25)";
 
   const openFullscreen = (image: string) => {
     setFullscreen(image);
@@ -147,6 +147,9 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
               <feFuncG type="table" tableValues="0.01 1" />
               <feFuncB type="table" tableValues="0.04 0.08" />
             </feComponentTransfer>
+          </filter>
+          <filter id="multispectral-color-map" colorInterpolationFilters="sRGB">
+            <feColorMatrix values="1.15 -0.55 1.35 0 0.04 1.35 -0.75 0.35 0 0.02 0.25 1.05 -0.35 0 0.04 0 0 0 1 0" />
           </filter>
         </defs>
       </svg>
@@ -202,7 +205,6 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
               >
                 <div className="relative">
                   <img src={image.data_url} alt={image.filename} className="block max-h-56 w-full object-contain transition-all duration-300 ease-in-out group-hover:scale-[1.02] sm:max-h-64" style={{ filter: imageFilter }} />
-                  {activeMode === "multispectral" && <div className="multispectral-overlay absolute inset-0" aria-hidden="true" />}
                 </div>
                 <button
                   type="button"
@@ -248,7 +250,6 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
               style={{ filter: imageFilter }}
               alt={images[0].filename}
             />
-            {activeMode === "multispectral" && <div className="multispectral-overlay pointer-events-none absolute inset-0" aria-hidden="true" />}
             <div className="bg-white/90 dark:bg-[#1F1B17] px-4 py-3 border-t border-stone-200 dark:border-white/10 flex justify-between items-center">
               <span className="text-xs font-mono text-secondary">{images[0].filename}</span>
               <button onClick={() => openFullscreen(images[0].data_url)} className="text-accent hover:text-accent/80 transition-colors"><Maximize2 className="w-4 h-4"/></button>
@@ -264,7 +265,6 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
               style={{ filter: imageFilter }}
               alt={images[1].filename}
             />
-            {activeMode === "multispectral" && <div className="multispectral-overlay pointer-events-none absolute inset-0" aria-hidden="true" />}
             <div className="bg-white/90 dark:bg-[#1F1B17] px-4 py-3 border-t border-stone-200 dark:border-white/10 flex justify-between items-center">
               <span className="text-xs font-mono text-secondary">{images[1].filename}</span>
               <button onClick={() => openFullscreen(images[1].data_url)} className="text-accent hover:text-accent/80 transition-colors"><Maximize2 className="w-4 h-4"/></button>
@@ -335,7 +335,6 @@ export function ImageWorkspace({ images, evidence, data }: ImageWorkspaceProps) 
               className="max-h-full max-w-full object-contain shadow-2xl rounded-lg animate-in zoom-in-95 duration-300"
               style={{ filter: imageFilter, transform: `scale(${fullscreenZoom})`, transition: "transform 220ms ease-out" }}
             />
-            {activeMode === "multispectral" && <div className="multispectral-overlay pointer-events-none absolute inset-0" style={{ transform: `scale(${fullscreenZoom})`, transition: "transform 220ms ease-out" }} aria-hidden="true" />}
           </div>
         </div>
       )}

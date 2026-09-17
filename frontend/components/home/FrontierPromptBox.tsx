@@ -37,8 +37,8 @@ const MODALITY_OPTIONS: { value: Modality; label: string }[] = [
 
 function getModalityPreviewFilter(modality: Modality) {
   if (modality === "sar") return "contrast(1.6) brightness(1.1) saturate(1.8) url(#upload-sar-color-map)";
-  if (modality === "multispectral") return "contrast(2.5) brightness(0.55) saturate(1.5)";
-  return "none";
+  if (modality === "multispectral") return "contrast(2.1) brightness(0.72) saturate(1.9) url(#upload-multispectral-color-map)";
+  return "contrast(1.15) saturate(1.25)";
 }
 
 const ACCEPTED_EXTENSIONS = ".tif,.tiff,.png,.jpg,.jpeg";
@@ -209,7 +209,6 @@ function ImageSlotCard({
       {preview ? (
         <div className="relative h-20 w-32 overflow-hidden rounded-lg bg-black/5 dark:bg-black/20">
           <img src={preview} alt={`Preview of ${slot.file.name}`} className="block h-20 w-32 object-cover transition-all duration-300 ease-in-out" style={{ filter: previewFilter }} />
-          {slot.modality === "multispectral" && <div className="multispectral-overlay absolute inset-0" aria-hidden="true" />}
           <svg className="pointer-events-none absolute h-0 w-0" aria-hidden="true" focusable="false">
             <defs>
               <filter id="upload-sar-color-map" colorInterpolationFilters="sRGB">
@@ -219,6 +218,9 @@ function ImageSlotCard({
                   <feFuncG type="table" tableValues="0.01 1" />
                   <feFuncB type="table" tableValues="0.04 0.08" />
                 </feComponentTransfer>
+              </filter>
+              <filter id="upload-multispectral-color-map" colorInterpolationFilters="sRGB">
+                <feColorMatrix values="1.15 -0.55 1.35 0 0.04 1.35 -0.75 0.35 0 0.02 0.25 1.05 -0.35 0 0.04 0 0 0 1 0" />
               </filter>
             </defs>
           </svg>

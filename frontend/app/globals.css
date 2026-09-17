@@ -257,12 +257,6 @@
     animation: simpleFadeIn 220ms ease-out both;
   }
 
-  .multispectral-overlay {
-    pointer-events: none;
-    background-color: rgba(213, 32, 177, 0.42);
-    mix-blend-mode: color;
-  }
-
   .select-menu-swish {
     transform-origin: top center;
     animation: selectMenuSwish 180ms cubic-bezier(0.16, 1, 0.3, 1) both;
